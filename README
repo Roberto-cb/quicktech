@@ -1,0 +1,145 @@
+Proyecto QuickTech – E‑Commerce de Periféricos Gamer
+1. Tecnologías y dependencias
+
+Backend: Node.js + Express + TypeScript.
+
+Base de datos: MySQL (gestionada con Prisma ORM).
+
+Autenticación: JWT (JSON Web Tokens), con hash de contraseñas usando bcrypt.
+
+Frontend: Vistas con EJS + estilos en CSS. (Se planea migrar a un frontend más completo).
+
+Otros paquetes:
+
+express-validator (validaciones).
+
+dotenv (variables de entorno).
+
+cookie-parser, method-override, morgan.
+
+multer, sweetalert2, notyf (para carga de imágenes y notificaciones).
+
+2. Estructura del proyecto
+src/
+│── controllers/    # Lógica de negocio (users, products, orders, cart, auth)
+│── routes/         # Rutas Express por entidad
+│── models/         # Modelos Prisma conectados a MySQL
+│── interfaces/     # Interfaces TypeScript (User, Product, Sale, etc.)
+│── services/       # Servicios auxiliares (hash, JWT, lógica de negocio)
+│── middlewares/    # Ej. verifyToken para autenticación
+│── views/          # Plantillas EJS (frontend básico)
+|   auth/
+     login.ejs
+     register.ejs
+|   layouts/
+     main.ejs
+|   partials/
+    footer.ejs
+    navbar.ejs
+|   shop/
+    home.ejs
+    product_detail.ejs        
+│── public/         # Archivos estáticos (CSS, JS, imágenes)
+    css/
+    #style.css
+    js/
+    auth.js
+app.ts              # Configuración del servidor Express
+server.ts           # Inicialización del servidor
+3. Base de datos (MySQL + Prisma)
+
+Usuarios: con rol por defecto cliente (solo admin puede registrar productos).
+
+Productos: incluye tipo, categoría, marca, modelo, precio (Decimal), stock, características, dimensiones (JSON) e imagen_url.
+
+Ventas y Detalle_Ventas (relación entre usuario y productos comprados).
+
+Carrito y CartItems: manejan productos agregados antes de la compra.
+
+4. Autenticación y autorización
+
+Registro y login de usuarios con validación.
+
+Hash de contraseñas con bcrypt.
+
+JWT generado al iniciar sesión.
+
+Middleware verifyToken protege rutas privadas (ej. /cart, /orders).
+
+5. Módulos implementados
+Usuarios (users)
+
+CRUD completo.
+
+Validaciones (edad mínima 18, email único, DNI único).
+
+Login y registro con JWT.
+
+Productos (products)
+
+CRUD completo (solo admin crea/edita productos).
+
+Campos especiales:
+
+precio como Decimal con new Prisma.Decimal(price).
+
+dimensiones como JSON válido.
+
+características como texto plano.
+
+Pedidos/Ventas (orders)
+
+Manejo de tabla ventas y detalle_ventas.
+
+Al generar una orden se crean registros en ambas tablas.
+
+Se descuenta el stock de productos involucrados.
+
+Carrito (cart)
+
+Endpoints:
+
+GET /cart → devuelve productos en el carrito y total estimado.
+
+POST /cart/items → agrega o actualiza un producto en el carrito.
+
+DELETE /cart/items/:productId → elimina un producto específico del carrito.
+
+DELETE /cart → vacía el carrito.
+
+POST /cart/checkout → genera una venta desde el carrito y lo vacía.
+
+Correcciones aplicadas:
+
+getCart ahora responde correctamente con items y totalEst.
+
+clearCart corrige typo (cleared: true).
+
+removeCartItem toma productId desde req.params y valida el valor.
+
+6. Avances de testing
+
+Probado con Postman:
+
+Registro y login de usuarios ✅.
+
+CRUD de usuarios y productos ✅.
+
+CRUD de órdenes parcialmente ✅
+CRUD de carrito en revisión  ✅
+
+7. Próximos pasos
+
+Retestear endpoints de Carrito y Órdenes con Postman.
+
+Implementar vistas EJS para:
+
+Catálogo de productos.
+
+Carrito interactivo.
+
+Checkout con confirmación de compra.
+
+Preparar despliegue (Docker o hosting en la nube).
+
+Optimizar validaciones y manejo de errores globales.

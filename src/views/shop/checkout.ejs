@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+  <%- include('../partials/head') %>
+<body 
+  data-logged="<%= user ? 1 : 0 %>" 
+  data-userid="<%= user?.id ?? '' %>"
+>
+  <%- include('../partials/navbar') %>
+
+  <main class="checkout-wrap">
+    <h1>Checkout</h1>
+
+    <div class="checkout-grid">
+      <section class="checkout-card">
+        <h2>Resumen del carrito</h2>
+        <div id="checkout-items" class="checkout-items"><p>Cargando...</p></div>
+
+        <div class="checkout-total">
+          <span>Total</span>
+          <strong id="checkout-total">$0</strong>
+        </div>
+      </section>
+
+      <aside class="checkout-aside">
+        <section class="checkout-card">
+          <h2>Tarjeta (demo)</h2>
+          <p>Seleccioná una tarjeta guardada.</p>
+
+          <select id="card-select" name="cardId" class="checkout-select"></select>
+
+          <div class="checkout-actions">
+            <button class="btn btn-primary" id="confirm-checkout" disabled>
+              Confirmar compra
+            </button>
+            <p id="checkout-msg" class="checkout-msg"></p>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script src="/js/checkout.js"></script>
+  <%- include('../partials/footer') %>
+</body>
+</html>

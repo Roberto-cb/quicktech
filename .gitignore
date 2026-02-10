@@ -1,0 +1,18 @@
+#Dependencias
+node_modules
+#Variables de entorno
+.env
+# TypeScript(compilacion)
+dist/
+build/
+*.tsbuildinfo
+
+/node_modules
+
+#Prisma 
+/src/generated/prisma
+/prisma/migrations/*.sql
+
+# Logs y archivos del sistema
+npm-debug.log*
+.DS_Store

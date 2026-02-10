@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+  <% const pageTitle = product ? `${product.brand} - ${product.model}` : "Detalle de producto"; %>
+  <%- include('../partials/head', { title: pageTitle }) %>
+
+  <body>
+    <%- include('../partials/navbar') %>
+
+    <main>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <p style="color:#ff6b6b;"><%= error %></p>
+      <% } %>
+
+      <% if (product) { %>
+        <article class="product-detail">
+          <!-- Columna izquierda: imagen -->
+          <div class="product-detail__media">
+            <div class="product-detail__image">
+              <img
+                src="<%= product.image_url || '' %>"
+                alt="<%= product.brand %> <%= product.model %>"
+              />
+            </div>
+          </div>
+
+          <!-- Columna derecha: info -->
+          <div class="product-detail__info">
+            <h1 class="product-detail__title"><%= product.brand %> - <%= product.model %></h1>
+
+            <div class="product-detail__meta">
+              <span class="product-detail__chip"><%= product.category %></span>
+              <span class="product-detail__chip"><%= product.type %></span>
+            </div>
+
+            <div class="product-detail__price">
+              $ <%= Number(product.price).toLocaleString('es-AR') %>
+            </div>
+
+            <% if (product.stock !== null && product.stock !== undefined) { %>
+              <% const s = Number(product.stock); %>
+              <div class="product-detail__stock <%= s === 0 ? 'out' : (s <= 5 ? 'low' : '') %>">
+                Stock: <strong><%= product.stock %></strong>
+              </div>
+            <% } %>
+
+            <div class="product-detail__actions">
+              <!-- Mantengo tu misma funcionalidad (POST /cart/items) -->
+              <form method="POST" action="/cart/items" style="display:flex; gap:.5rem; align-items:center;">
+                <input type="hidden" name="productId" value="<%= product.id %>" />
+                <input type="number" name="quantity" min="1" value="1" style="width:72px; text-align:center;">
+                <button class="btn btn-primary" type="submit">Agregar al carrito</button>
+              </form>
+
+              <a class="btn btn-ghost" href="/">Volver</a>
+            </div>
+
+            <% if (product.features) { %>
+              <div class="product-detail__divider"></div>
+              <section class="product-detail__section">
+                <h3>Características</h3>
+                <p><%= product.features %></p>
+              </section>
+            <% } %>
+
+            <% const d = product.dimensions; %>
+            <% if (d && typeof d === 'object' && !Array.isArray(d) && Object.keys(d).length) { %>
+              <div class="product-detail__divider"></div>
+              <section class="product-detail__section">
+                <h3>Dimensiones</h3>
+                <ul class="product-detail__list">
+                  <% Object.entries(d).forEach(([k, v]) => { %>
+                    <li><%= k %>: <%= v %></li>
+                  <% }) %>
+                </ul>
+              </section>
+            <% } %>
+
+          </div>
+        </article>
+      <% } else { %>
+        <article class="card" style="padding:1rem;">
+          <h1 style="margin:0 0 .5rem;">Producto no encontrado</h1>
+          <a class="btn btn-ghost" href="/">Volver al catálogo</a>
+        </article>
+      <% } %>
+    </main>
+
+    <%- include('../partials/footer') %>
+  </body>
+</html>

@@ -1,0 +1,109 @@
+// This is your Prisma schema file
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql" // <- MUY IMPORTANTE: mysql para XAMPP/MariaDB
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  client
+  admin
+}
+
+model User {
+  id         Int    @id @default(autoincrement())
+  first_name String
+  last_name  String
+  dni        String @unique
+  email      String @unique
+  password   String
+  age        Int
+  role       Role   @default(client)
+
+  state         String
+  city          String
+  street        String
+  street_number String
+  postal_code   String
+
+  passwordResetTokenHash String?
+  passwordResetExpiresAt DateTime?
+
+  // Relaciones
+  sales Sale[] // Un usuario puede tener muchas ventas
+  cart  Cart? // Un usuario tiene un carrito
+}
+
+model Product {
+  id         Int     @id @default(autoincrement())
+  type       String
+  category   String
+  brand      String
+  model      String
+
+  // 🔧 Ajustado a la DB real
+  dimensions String @db.LongText
+
+  price      Decimal
+  image_url  String
+  features   String
+  stock      Int?
+
+  // 🟢 Soft delete
+  isActive   Boolean @default(true)
+
+  // Relaciones
+  saleDetails SaleDetail[]
+  cartItems   CartItem[]
+}
+
+model Sale {
+  id      Int      @id @default(autoincrement())
+  user_id Int
+  total   Decimal
+  date    DateTime @default(now())
+
+  // Relaciones
+  user        User         @relation(fields: [user_id], references: [id])
+  saleDetails SaleDetail[] // Una venta tiene muchos detalles
+}
+
+model SaleDetail {
+  id         Int     @id @default(autoincrement())
+  sale_id    Int
+  product_id Int
+  quantity   Int
+  subtotal   Decimal
+
+  // Relaciones
+  sale    Sale    @relation(fields: [sale_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+}
+
+model Cart {
+  id         Int      @id @default(autoincrement())
+  user_id    Int      @unique
+  updated_at DateTime @updatedAt
+
+  // Relaciones
+  user  User       @relation(fields: [user_id], references: [id])
+  items CartItem[]
+}
+
+model CartItem {
+  id         Int @id @default(autoincrement())
+  cart_id    Int
+  product_id Int
+  quantity   Int
+
+  // Relaciones
+  cart    Cart    @relation(fields: [cart_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@unique([cart_id, product_id])
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+  <%- include('../partials/head', { title: 'Registro' }) %>
+  <body>
+    <%- include('../partials/navbar') %>
+
+    <main class="auth-wrap">
+      <section class="auth-card">
+        <header class="auth-head">
+          <h1>Registro</h1>
+        </header>
+
+        <div class="auth-body">
+          <form action="/auth/register" method="POST">
+            <div class="form-row inline">
+              <input class="input" type="text" name="first_name" placeholder="Nombre" required />
+              <input class="input" type="text" name="last_name" placeholder="Apellido" required />
+            </div>
+
+            <div class="form-row inline">
+              <input class="input" type="text" name="dni" placeholder="DNI" required />
+              <input class="input" type="number" name="age" placeholder="Edad" required />
+            </div>
+
+            <div class="form-row">
+              <input class="input" type="email" name="email" placeholder="Email" required />
+            </div>
+
+            <div class="form-row">
+              <input class="input" type="password" name="password" placeholder="Contraseña" required />
+            </div>
+
+            <div class="form-row inline">
+              <input class="input" type="text" name="state" placeholder="Provincia" required />
+              <input class="input" type="text" name="city" placeholder="Ciudad" required />
+            </div>
+
+            <div class="form-row inline">
+              <input class="input" type="text" name="street" placeholder="Calle" required />
+              <input class="input" type="text" name="street_number" placeholder="Número" required />
+            </div>
+
+            <div class="form-row">
+              <input class="input" type="text" name="postal_code" placeholder="Código Postal" required />
+            </div>
+
+            <div class="auth-actions">
+              <button class="btn btn-primary" type="submit">Registrarse</button>
+            </div>
+          </form>
+        </div>
+
+        <footer class="auth-footer">
+          ¿Ya tenés cuenta? <a href="/auth/login">Iniciar sesión</a>
+        </footer>
+      </section>
+    </main>
+
+    <%- include('../partials/footer') %>
+  </body>
+</html>

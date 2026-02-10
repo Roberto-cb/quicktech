@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+  <%- include('../partials/head', { title: 'Iniciar sesión' }) %>
+  <body>
+    <%- include('../partials/navbar') %>
+
+    <main class="auth-wrap">
+      <section class="auth-card">
+        <header class="auth-head">
+          <h1>Iniciar sesión</h1>
+        </header>
+
+        <div class="auth-body">
+          <form action="/auth/login" method="POST">
+            <div class="form-row">
+              <label class="label">Email</label>
+              <input class="input" type="email" name="email" required />
+            </div>
+
+            <div class="form-row">
+              <label class="label">Contraseña</label>
+              <input class="input" type="password" name="password" required />
+            </div>
+
+            <div class="auth-actions">
+              <button class="btn btn-primary" type="submit">Entrar</button>
+            </div>
+            <p style="margin:0; text-align:center;">
+              <a class="nav-link" href="/auth/forgot-password">¿Olvidaste tu contraseña?</a>
+            </p>
+          </form>
+        </div>
+
+        <footer class="auth-footer">
+          ¿No tenés cuenta? <a href="/auth/register">Registrarse</a>
+        </footer>
+      </section>
+    </main>
+
+    <%- include('../partials/footer') %>
+  </body>
+</html>
