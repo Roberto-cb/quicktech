@@ -1,11 +1,9 @@
+import { JwtPayload } from "../models/jwt.interface";
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: number;
-        email: string;
-        role: 'client' | 'admin';
-      };
+      user?: JwtPayload;
+    
     }
   }
 }

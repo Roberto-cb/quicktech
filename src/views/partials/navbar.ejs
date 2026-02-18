@@ -27,6 +27,9 @@
   <!-- Navegación -->
   <nav class="navbar" aria-label="Navegación principal">
     <% if (typeof user !== 'undefined' && user) { %>
+      <span class="nav-welcome">
+      Hola, <span id="nav-user-name"><%= user.first_name %></span>
+    </span>
       <a href="/profile" class="nav-link">Perfil</a>
       <form method="POST" action="/auth/logout" style="display:inline;">
         <button type="submit" class="btn btn-ghost">Cerrar sesión</button>

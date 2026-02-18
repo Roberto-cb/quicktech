@@ -1,16 +1,21 @@
 
-
 const BASE_URL = "";
 
 //Funcion para llamar a las apis
 async function apiGet(path) {
     const res = await fetch(BASE_URL + path, { credentials: "include" });
+    
+    if(res.status === 401){
+      window.location.href = "/auth/login?expired=true";
+      return {};
+    }
+    
     if (!res.ok) {
         let msg = res.statusText;
         try {
             const err = await res.json();
             msg = err.error || err.message || msg;
-
+ 
         } catch { };
 
         throw new Error(`Error ${res.status}: ${msg}`)
@@ -19,13 +24,8 @@ async function apiGet(path) {
     try { json = await res.json(); } catch { return {}; }
 
 
-    //Normalizar formatos
-    if (Array.isArray(json)) return json;
-    if (json.payload) return json.payload;
-    if (json.items) return json.items;
-    if (json.orders) return json.orders;
-    if (json.data) return json.data;
-    return json;
+   
+    return json.data ?? json.orders ?? json.payload ?? json;
 }
 
 
@@ -36,6 +36,10 @@ async function apiPut(path, bodyObj) {
         credentials: "include",
         body: JSON.stringify(bodyObj),
     });
+    if(res.status === 401){
+      window.location.href = "/auth/login?expired=true";
+      return {};
+    }
     if (!res.ok) {
         let msg = res.statusText;
         try {
@@ -55,6 +59,11 @@ async function apiPost(path,bodyObj) {
         credentials:"include",
         body: JSON.stringify(bodyObj),
     });
+
+    if(res.status === 401){
+      window.location.href = "/auth/login?experied=true";
+      return;
+    }
     if(!res.ok){
         let msg = res.statusText;
         try{
@@ -71,7 +80,11 @@ async function  apiDelete(path) {
     const res = await fetch(BASE_URL + path, {
         method: "DELETE",
         credentials: "include",
-    })
+    });
+    if(res.status === 401){
+      window.location.href = "/auth/login?experied=true";
+      return {};
+    }
     if(!res.ok){
         let msg = res.statusText;
         try{
@@ -135,9 +148,9 @@ async function loadPersonal() {
     try {
         personalMsg.textContent = "Cargando tus datos...";
         ///Realiza la busqueda 
-        const raw = await apiGet(`/users/${userId}`);
+        //const raw = await apiGet(`/users/${userId}`);
         //Los almacenamos en un array
-        const me = Array.isArray(raw) ? raw[0] : raw;
+        const me = await apiGet(`/users/${userId}`);
 
         personalForm.first_name.value     = me.first_name ?? "";
         personalForm.last_name.value      = me.last_name ?? "";
@@ -164,12 +177,41 @@ if (personalForm) {
             personalMsg.textContent = "Guardando..."
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData.entries());
+            
             if(data.age) data.age = Number(data.age);
             await apiPut(`/users/${userId}`, data);
-            personalMsg.textContent = "Datos guardados";
+
+            Swal.fire({
+              icon: 'success',
+                title: '¡Perfil actualizado!',
+                text: 'Tus cambios se guardaron correctamente.', // Corregido: 'text' en lugar de 'test'
+                background: '#1a1a1a',
+                color: '#ffffff',
+                iconColor: '#28a745',
+                showConfirmButton: false,
+                timer: 2000,
+                toast: true,
+                position: 'top-end'
+            });
+            
+            //3. Actualizacion del navbar en vivo
+            const navNameElement = document.getElementById('nav-user-name');
+            if(navNameElement && data.first_name){
+              navNameElement.textContent = data.first_name;
+            }
+            
+            personalMsg.textContent = "";
 
         } catch (err) {
-            personalMsg.textContent = err.message || " No se pudo guardar tus datos"
+
+          Swal.fire({
+            icon: 'error',
+                title: 'Error',
+                text: err.message || "No se pudo guardar tus datos",
+                background: '#1a1a1a',
+                color: '#ffffff'
+          });
+            personalMsg.textContent = "";
         }
     });
 }
@@ -683,7 +725,7 @@ function buildPayloadFromForm(){
         brand: data.brand,
         model: data.model,
         price: Number(data.price),
-        stock:  data.stock === "" ? 0: Number(data.stock),
+        stock:  Number(data.stock || 0),
         image_url: data.image_url,
         features: data.features,
         dimensions,
@@ -702,7 +744,7 @@ function fillFormWithProduct(p){
     productForm.brand.value = p.brand ?? "";
     productForm.model.value = p.model ?? "";
     productForm.price.value = Number(p.price ?? 0);
-    productForm.stock.value = p.stock ?? 0;
+    productForm.stock.value = p.stock;
     productForm.image_url.value = p.image_url ?? "";
     productForm.features.value = p.features ?? "";
     
@@ -728,7 +770,7 @@ function renderAdminProducts(list){
         <div class="item-row">
             <p>
                 <strong>#${p.id} ${p.brand ?? ""} ${p.model ?? ""}</strong><br>
-                $ ${Number(p.price ?? 0)} - Stock: ${p.stock ?? 0}<br>
+                $ ${Number(p.price)} - Stock: ${p.stock}<br>
                 <span style ="color: var(--header-muted); font-size: .9rem;">
                 ${p.category ?? "" } • ${p.type ?? ""}
                 </span> 
@@ -779,7 +821,7 @@ async function loadAdminProducts() {
     
     try{
     const items = await apiGet("/products?page=1&pageSize=50&sort=newest");
-    adminProductsCache = Array.isArray(items) ? items : (items.items || []);
+    adminProductsCache = Array.isArray(items) ? items : [];
     renderAdminProducts(adminProductsCache);
     }catch(e){
         adminProductsList.innerHTML =  `<p class="form-hint"> ${e.message || "Error cargando productos"}</p>`;
@@ -846,3 +888,10 @@ if(productForm){
     const adminTabBtn = document.querySelector('[data-tab="tab-admin-products"]');
     if(adminTabBtn) adminTabBtn.addEventListener("click", loadAdminProducts, {once:true});
 })();
+
+window.addEventListener("storage",(event)=>{
+  if(event.key === CARDS_KEY){
+    console.log("Detectamos cambios en las tarjetas desde otra pestaña.");
+    renderCards();
+  }
+})

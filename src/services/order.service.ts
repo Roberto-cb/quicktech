@@ -1,4 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import user from "../models/user";
+
 
 const prisma = new PrismaClient();
 
@@ -123,8 +125,10 @@ const createOrderWithTx = async(
  return{id: sale.id, total: sale.total, date: sale.date}
 };
 
-export const createOrder = async(userId: number, items: OrderItem[]): Promise<CreateOrderResult> =>{
-  return prisma.$transaction((tx)=> createOrderWithTx(tx, userId, items))
+export const createOrder = async (userId: number, items: OrderItem[]): Promise<CreateOrderResult> =>{
+  return prisma.$transaction(async (tx)=>{
+    return createOrderWithTx(tx,userId,items);
+  })
 }
 
 
@@ -141,7 +145,8 @@ export const checkoutFromCart = async (userId: number): Promise<CreateOrderResul
 
     const cartItems = cart?.items ?? [];
     if (!cartItems.length) throw new Error("EMPTY_CART");
-
+    
+    /*
     // 1) limpiar items inválidos (producto inexistente o inactivo)
     const invalidIds = cartItems
       .filter((it) => !it.product || !it.product.isActive)
@@ -152,14 +157,29 @@ export const checkoutFromCart = async (userId: number): Promise<CreateOrderResul
         where: { cart_id: cart!.id, product_id: { in: invalidIds } },
       });
     }
+    */
+    const itemsInactivos = cartItems.filter((it)=> !it.product || !it.product.isActive);
 
+    if(itemsInactivos.length > 0){
+      //En lugar de borrar y seguir, lanzamos un error especifico
+      //usamos el ID del producto si no tenemos el nombre.
+      const proId = itemsInactivos[0].product_id;
+      throw new Error(`PRODUCT_INACTIVE:${proId}`);
+    }
+    // 2) Quedarnos solo con items validos(si paso el filtro anterior, todos son validos).
+    const validItems: OrderItem[] = cartItems.map((it)=> ({
+      productId: it.product_id,
+      quantity: it.quantity,
+    }));
+    
+    /*
     // 2) quedarnos solo con items válidos
     const validItems: OrderItem[] = cartItems
       .filter((it) => it.product && it.product.isActive)
       .map((it) => ({ productId: it.product_id, quantity: it.quantity }));
 
     if (!validItems.length) throw new Error("EMPTY_CART");
-
+    */
     // 3) crear venta
     const sale = await createOrderWithTx(tx, userId, validItems);
 

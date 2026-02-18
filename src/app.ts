@@ -12,7 +12,7 @@ import productRoutes from './routes/product.routes'
 import orderRoutes from './routes/order.routes'
 import cartsRoutes from './routes/cart.routes'
 import shopRoutes from './routes/shop.routes'
-import currentUser from './middlewares/cuerrentUser';
+import currentUser from './middlewares/currentUser';
 import profileRoutes from './routes/profile.routes';
 
 // con esto vamos a crear middleware
@@ -40,6 +40,12 @@ app.use('/cart',cartsRoutes);
 app.use("/", shopRoutes);
 app.use("/profile",profileRoutes);
 
-
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) =>{
+    console.log(err.stack);
+    const status = err.status || 500;
+    res.status(status).render('shop/home', {
+        error: err.message || 'Ocurrio un error inesperado en el servidor'
+    });
+})
 console.log("Este está siendo ejecutado");
 export default app;

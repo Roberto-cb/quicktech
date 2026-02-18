@@ -11,7 +11,7 @@ import {
   getProductByIdAdmin,
   setProductActive,
 } from "../controllers/product.controller";
-import { uploadExel } from "../middlewares/uploadExel.middleware";
+import { uploadExcel } from "../middlewares/uploadExcel.middleware";
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.post(
   "/import-excel",
   verifyToken,
   checkRole("admin"),
-  uploadExel.single("excel"),
+  uploadExcel.single("excel"),
   importProductsFromExcel
 );
 

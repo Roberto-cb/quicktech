@@ -1,6 +1,8 @@
 /* ============================================
    1. ESTADO DE SESIÓN
    ============================================ */
+
+
 // ¿El usuario está logueado?
 function isLogged() {
   return document.body.getAttribute("data-logged") === "1";
@@ -107,12 +109,19 @@ let userCartMap = new Map();
 
 async function fetchUserCart() {
   const res = await fetch("/cart", {headers: {Accept:"application/json"} });
+
+  if(res.status === 401){
+    window.location.href = "/auth/login?expired=true"; 
+    return {items: []};
+  }
   if(!res.ok) throw new Error("No se pudo obtener el carrito");
   
-  const data = await res.json();
+  const json = await res.json();
+
+  const remoteData = json.data ?? json.items ?? json;
 
   // Api
-  const items =(data.items || []).map((i) =>({
+  const items =(Array.isArray(remoteData) ? remoteData: (remoteData.items || [])).map((i) =>({
     productId: Number(i.productId),
     name: i.name ?? "Producto",
      image_url: i.image_url ?? "",
@@ -125,7 +134,7 @@ async function fetchUserCart() {
 
   return {
     items,
-    totalEst: Number(data.totalEst || 0),
+    totalEst: Number(remoteData.totalEst || json.totalEst || 0),
   };
 }
 
@@ -137,16 +146,22 @@ async function setUserCartQuantity(productId,quantity) {
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({productId, quantity}),
   });
+  if(res.status === 401){
+    window.location.href ="/auth/login?expired=true";
+    return;
+  }
   if(!res.ok) throw new Error("No se pudo actualizar el item del carrito");
 }
 
 async function removeUserCartItem(productId) {
   const res = await fetch(`/cart/items/${productId}`, {method: "DELETE"});
+  if (res.status === 401) { window.location.href = "/auth/login?expired=true"; return; }
   if(!res.ok) throw new Error("No se puedo eliminar el items");
 }
 
 async function clearUserCart() {
   const res = await fetch("/cart", {method: "DELETE"});
+  if (res.status === 401) { window.location.href = "/auth/login?expired=true"; return; }
   if(!res.ok) throw new Error("No se pudo vaciar el carrito")
 }
 
@@ -203,7 +218,7 @@ function openAdminModal(mode){
   if(!adminModal) return;
   adminModal.hidden = false;
 
-  if(adminTitle) adminTitle.textContent = mode === "edit" ? "Editar product" : "Crear producto";
+  if(adminTitle) adminTitle.textContent = mode === "edit" ? "Editar producto" : "Crear producto";
   if(adminSaveBtn) adminSaveBtn.textContent = mode === "edit" ? "Guardar cambios" : "Guardar";
 }
 
@@ -239,7 +254,7 @@ function buildAdminPayload(){
     price: Number(data.price || 0),
     image_url: String(data.image_url || "").trim(),
     features: String(data.features || "").trim(),
-    stock: data.stock === "" || data.stock == null ? 0 : Number(data.stock),
+    stock: Number(data.stock || 0),
     dimensions: dimsObj,
   };
 }
@@ -252,7 +267,7 @@ function fillAdminForm(p){
   adminForm.querySelector('[name="type"]').value = p.type ?? "";
   
   adminForm.querySelector('[name="price"]').value = String(p.price ?? "");
-  adminForm.querySelector('[name="stock"]').value = String(p.stock ?? 0);
+  adminForm.querySelector('[name="stock"]').value = String(p.stock);
   
   adminForm.querySelector('[name="image_url"]').value = p.image_url ?? "";
   adminForm.querySelector('[name="features"]').value = p.features ?? "";
@@ -282,6 +297,10 @@ async function adminSaveProduct(e) {
         credentials: "include",
         body: JSON.stringify(payload),
       }).then(async (r) => {
+        if(r.status === 401) {
+          window.location.href = "/auth/login?expired=true";
+          return;
+        }
         if(!r.ok) throw new Error((await r.json()).error || "No se pudo actualizar");
       });
     } else {
@@ -291,10 +310,14 @@ async function adminSaveProduct(e) {
         credentials: "include",
         body:JSON.stringify(payload),
       }).then(async (r) => {
+         if(r.status === 401) {
+          window.location.href = "/auth/login?expired=true";
+          return;
+        }
         if(!r.ok) throw new Error((await r.json()).error || "No se pudo crear");
       })
     }
-
+    
     closeAdminModal();
     //recargar catalogo y opcional buscar el producto creado
     await loadProducts();
@@ -316,6 +339,9 @@ async function adminImportExcel(file){
     credentials:"include",
     body: formData
   });
+  if (res.status === 401) { window.location.href = "/auth/login?expired=true"; return; }
+
+  
 
   const data = await res.json().catch(()=>({}));
   if(!res.ok) throw new Error(data?.error || "Error importando excel");
@@ -500,6 +526,11 @@ async function loadProducts() {
       credentials: "include", // ✅ clave para /products/admin
     });
 
+    if(res.status === 401){
+      window.location.href = "/auth/login?expired=true";
+      return;
+    }
+
     // ✅ si el backend responde 401/403, no intentes pintar como si fuera catálogo
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -507,8 +538,8 @@ async function loadProducts() {
       return;
     }
 
-    const data = await res.json();
-    const products = data.items || [];
+    const json = await res.json();
+    const products = json.data ?? json.items ?? json;
 
     if (!products.length) {
       grid.innerHTML = q
@@ -876,12 +907,36 @@ document.addEventListener("click", async (e) => {
 
   // Continuar compra
   if (e.target.closest("#guest-cart-continue")) {
+
+    //Calculamos la cantidad actual segun el estado
+    let count = 0;
+
     if (!isLogged()) {
-      location.href = "/auth/login?next=/checkout";
+      count = guestCartCount();
+      //location.href = "/auth/login?next=/checkout";
     } else {
-      location.href = "/checkout";
+      count = Array.from(userCartMap.values()).reduce((acc,q) => acc + q, 0);
+      //location.href = "/checkout";
+    }
+    if(count === 0){
+      e.preventDefault();
+      Swal.fire({
+        icon: 'info',
+        title: 'Carrito Vacio',
+        text: 'Agrega algunos productos antes de ir al checkout',
+        background: '#1a1a1a',
+        color: '#ffffff',
+        confirmButtonColor: '#28a745'
+      });
+      return;
+    }
+    if(!isLogged()){
+      location.href = "/auth/login?next=/checkout";
+    }else {
+      location.href = "/checkout";;
     }
     return;
+   
   }
 
   // Acciones dentro del modal (+, -, remove)

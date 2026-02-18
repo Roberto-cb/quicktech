@@ -52,7 +52,7 @@ model Product {
   price      Decimal
   image_url  String
   features   String
-  stock      Int?
+  stock       Int      @default(0)
 
   // 🟢 Soft delete
   isActive   Boolean @default(true)

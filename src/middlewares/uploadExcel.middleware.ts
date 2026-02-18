@@ -3,7 +3,7 @@ import multer from "multer";
 const storage = multer.memoryStorage();
 
 
-export const uploadExel = multer({
+export const uploadExcel = multer({
     fileFilter: (_req,file, cb) =>{
         const name = file.originalname.toLowerCase();
         const ok = 

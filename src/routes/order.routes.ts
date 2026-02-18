@@ -7,8 +7,10 @@ import { postOrder, getOrdersMine,getOrdersAll, getOrder, postCheckout} from '..
 const router = express.Router();
 
 router.post('/checkout',verifyToken,postCheckout);
-router.post('/',verifyToken,postOrder);
+
 router.get('/mine',verifyToken,getOrdersMine);
 router.get('/:id',verifyToken,getOrder);
+router.post('/',verifyToken,postOrder);
 
+router.get('/', verifyToken, getOrdersAll);
 export default router;
