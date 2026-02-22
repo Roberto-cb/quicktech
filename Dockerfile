@@ -15,7 +15,10 @@ COPY . .
 
 RUN npm run build
 
-RUN cp -r src/views dist/views && cp -r public dist/public || true
+
+RUN mkdir -p dist/views dist/public
+RUN cp -r src/views/* dist/views/
+RUN cp -r public/* dist/public/
 
 EXPOSE 3000
 
