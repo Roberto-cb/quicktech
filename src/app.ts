@@ -15,14 +15,31 @@ import shopRoutes from './routes/shop.routes'
 import currentUser from './middlewares/currentUser';
 import profileRoutes from './routes/profile.routes';
 
-// con esto vamos a crear middleware
 const app = express();
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public')));
+/** * AJUSTE PARA PRODUCCIÓN:
+ * En Railway, el archivo compilado está en 'dist/app.js'.
+ * Usamos una lógica para encontrar la carpeta 'views' y 'public' 
+ * sin importar si estamos en src/ o en dist/.
+ */
+const rootDir = __dirname.endsWith('dist') || __dirname.includes('dist') 
+    ? path.join(__dirname) 
+    : __dirname;
 
-// middleware para poder usar json
+app.set('view engine', 'ejs');
+
+// Buscamos las vistas: primero intenta en la carpeta actual, si no, sube un nivel
+app.set('views', [
+    path.join(rootDir, 'views'),
+    path.join(process.cwd(), 'src', 'views'),
+    path.join(process.cwd(), 'views')
+]);
+
+// Archivos estáticos (CSS, Imágenes, JS del cliente)
+app.use(express.static(path.join(process.cwd(), 'public')));
+app.use(express.static(path.join(rootDir, 'public')));
+
+// Middlewares estándar
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -31,21 +48,24 @@ app.use(morgan('dev'));
 
 app.use(currentUser);
 
-//Routes
-app.use('/auth',authRoutes);
-app.use('/users',usersRoutes);
-app.use('/products',productRoutes);
-app.use('/orders',orderRoutes);
-app.use('/cart',cartsRoutes);
+// Routes
+app.use('/auth', authRoutes);
+app.use('/users', usersRoutes);
+app.use('/products', productRoutes);
+app.use('/orders', orderRoutes);
+app.use('/cart', cartsRoutes);
 app.use("/", shopRoutes);
-app.use("/profile",profileRoutes);
+app.use("/profile", profileRoutes);
 
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) =>{
-    console.log(err.stack);
+// Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.stack);
     const status = err.status || 500;
     res.status(status).render('shop/home', {
-        error: err.message || 'Ocurrio un error inesperado en el servidor'
+        error: err.message || 'Ocurrió un error inesperado en el servidor',
+        user: (req as any).user || null // Aseguramos que no rompa si falta el usuario
     });
-})
-console.log("Este está siendo ejecutado");
+});
+
+console.log("Servidor QuickTech inicializado correctamente");
 export default app;
