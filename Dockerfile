@@ -15,6 +15,8 @@ COPY . .
 
 RUN npm run build
 
+RUN cp -r src/views dist/views && cp -r public dist/public || true
+
 EXPOSE 3000
 
 CMD ["npm", "start"]
