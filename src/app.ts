@@ -17,27 +17,23 @@ import profileRoutes from './routes/profile.routes';
 
 const app = express();
 
-/** * AJUSTE PARA PRODUCCIÓN:
- * En Railway, el archivo compilado está en 'dist/app.js'.
- * Usamos una lógica para encontrar la carpeta 'views' y 'public' 
- * sin importar si estamos en src/ o en dist/.
+/**
+ * CONFIGURACIÓN DE RUTAS DINÁMICAS (HÍBRIDO LOCAL/PRODUCCIÓN)
+ * process.cwd() es la raíz del proyecto.
+ * __dirname es donde está este archivo (src/ o dist/).
  */
-const rootDir = __dirname.endsWith('dist') || __dirname.includes('dist') 
-    ? path.join(__dirname) 
-    : __dirname;
-
 app.set('view engine', 'ejs');
 
-// Buscamos las vistas: primero intenta en la carpeta actual, si no, sube un nivel
+// Buscamos las vistas en ambos lugares posibles
 app.set('views', [
-    path.join(rootDir, 'views'),
-    path.join(process.cwd(), 'src', 'views'),
-    path.join(process.cwd(), 'views')
+    path.join(__dirname, 'views'),        // Para producción (dist/views)
+    path.join(process.cwd(), 'src', 'views') // Para local (src/views)
 ]);
 
-// Archivos estáticos (CSS, Imágenes, JS del cliente)
-app.use(express.static(path.join(process.cwd(), 'public')));
-app.use(express.static(path.join(rootDir, 'public')));
+// Servimos archivos estáticos (CSS, JS, Imágenes)
+// Intentamos primero en dist/public y luego en src/public
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(process.cwd(), 'src', 'public')));
 
 // Middlewares estándar
 app.use(express.json());
@@ -59,13 +55,19 @@ app.use("/profile", profileRoutes);
 
 // Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error(err.stack);
+    console.error("Error detectado:", err.message);
     const status = err.status || 500;
-    res.status(status).render('shop/home', {
-        error: err.message || 'Ocurrió un error inesperado en el servidor',
-        user: (req as any).user || null // Aseguramos que no rompa si falta el usuario
-    });
+    
+    // Si falla una vista, al menos enviamos un JSON o un mensaje simple
+    try {
+        res.status(status).render('shop/home', {
+            error: err.message || 'Ocurrió un error inesperado en el servidor',
+            user: (req as any).user || null
+        });
+    } catch (renderError) {
+        res.status(status).send('Error crítico de renderizado. Verifique las carpetas de vistas.');
+    }
 });
 
-console.log("Servidor QuickTech inicializado correctamente");
+console.log("Servidor QuickTech inicializado - Modo Híbrido Activo");
 export default app;

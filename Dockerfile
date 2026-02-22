@@ -15,20 +15,20 @@ RUN npm install
 # Generamos el cliente de Prisma
 RUN npx prisma generate
 
-# Copiamos TODO el proyecto (incluyendo las carpetas public y views)
+# Copiamos TODO el proyecto
 COPY . .
 
 # Ejecutamos el build de TypeScript
 RUN npm run build
 
-# --- AJUSTE CRÍTICO PARA ESTILOS Y VISTAS ---
-# Nos aseguramos de que existan las carpetas en dist
+# --- AJUSTE DEFINITIVO PARA TU ESTRUCTURA ---
+# Nos aseguramos de que existan las carpetas de destino en dist
 RUN mkdir -p dist/views dist/public
 
-# Copiamos el contenido visual a la carpeta de distribución
-# Usamos comandos que no rompan el build si alguna carpeta está vacía
+# Copiamos el contenido visual desde src/ hacia dist/
+# Usamos el punto "." para copiar el contenido de las carpetas correctamente
 RUN cp -r src/views/. dist/views/ || true
-RUN cp -r public/. dist/public/ || true
+RUN cp -r src/public/. dist/public/ || true
 
 EXPOSE 3000
 
