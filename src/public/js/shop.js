@@ -11,10 +11,11 @@ function isLogged() {
 function isAdmin(){
   return document.body.getAttribute("data-role") === "admin";
 }
+
 /* ============================================
    2. CARRITO GUEST (LocalStorage)
    ============================================ */
-
+/*
 const GUEST_CART_KEY = "qt_cart_guest";
 
 // Obtener carrito
@@ -64,6 +65,7 @@ function addToGuestCart(product, delta) {
   if (modal && modal.hidden === false && !isLogged()) renderGuestCart();
 }
 
+*/
 async function mergeGuestCartIfLogged() {
   if(!isLogged()) return;
 
@@ -209,7 +211,20 @@ const adminSaveBtn = document.getElementById("admin-modal-save");
 const adminImportExcelBtn = document.getElementById("admin-import-excel");
 const adminExcelInput = document.getElementById("admin-excel-file");
 
-
+// Esta función es el "onUpdate" que espera shop-cart.js
+async function handleCartUpdateUI() {
+  await refreshCartBadge(); // Actualiza el numerito del navbar
+  await syncQuantities();   // Actualiza los números en las cards
+  
+  // Si el modal del carrito está abierto, lo refresca
+  if (typeof modal !== 'undefined' && !modal.hidden) {
+    if (!isLogged()) {
+      renderGuestCart();
+    } else {
+      await renderUserCart();
+    }
+  }
+}
 //Helpers: abrir/cerrar + setear modo
 
 let adminEditingId = null;
@@ -704,7 +719,8 @@ function attachCatalogEvents() {
         image_url: card.querySelector("img")?.src || ""
       };
 
-      addToGuestCart(product,delta);
+      // Aquí usamos la función del OTRO archivo y le pasamos el "puente"
+      addToGuestCart(product, delta, handleCartUpdateUI);
       return;
     }
 
