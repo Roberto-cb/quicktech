@@ -1,3 +1,5 @@
+
+
 /* ============================================================
    QT_SHOP_CART.JS - Lógica de LocalStorage
    ============================================================ */
@@ -41,3 +43,37 @@ function addToGuestCart(product, delta, onUpdate) {
     // Si pasamos una función de aviso, la ejecutamos
     if (typeof onUpdate === 'function') onUpdate();
 }
+
+
+async function mergeGuestCartIfLogged(){
+    if(typeof isLogged !== 'function' || !isLogged()) return;
+
+    const guest = getGuestCart();
+    if(!Array.isArray(guest) || guest.length === 0) return;
+
+    const items = guest
+    .map((it)=>({
+     productId:  Number(it.productId),
+     quantity: Number(it.quantity || 0),
+    }))
+    .filter((it)=> it.productId > 0 && it.quantity > 0 );
+
+    if(!items.length) return;
+
+    try{
+        const res = await fetch('/cart/merge',{
+            method: 'POST',
+            headers:{"Content-Type" : "application/json"},
+            credentials: "include",
+            body: JSON.stringify({items})  
+        });
+
+        if(res.ok){
+            localStorage.removeItem(GUEST_CART_KEY);
+            if(typeof fetchUserCartAPI === 'function') await fetchUserCartAPI();
+        } 
+    } catch(err){
+        console.error('Merge guest cart fallo: ', err);
+    } 
+}
+

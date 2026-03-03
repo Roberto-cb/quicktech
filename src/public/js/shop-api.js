@@ -2,6 +2,13 @@
    QT_SHOP_API.JS - Comunicación con el Servidor (Fetch)
    ============================================================ */
 
+function isLogged() {
+  return document.body.getAttribute("data-logged") === "1";
+}
+
+function isAdmin(){
+  return document.body.getAttribute("data-role") === "admin";
+}
 // 1. Obtener el catálogo de productos
 async function fetchProductsAPI(isAdminMode = false, query = "") {
     const baseUrl = isAdminMode ? "/products/admin" : "/products";
@@ -63,4 +70,47 @@ async function deleteCartItemAPI(productId = null) {
         return false;
     }
     return res.ok;
+}
+
+async function createProductAPI(payload) {
+    const res = await fetch('/products', { 
+        method: 'POST',
+        headers: {"Content-Type" : "application/json"},
+        credentials: "include",
+        body: JSON.stringify(payload)
+   });
+   if(res.status === 401){ window.location.href = "/auth/login?expired=true"; return null;}
+   if(!res.ok) throw new Error((await res.json()).error || "No se pudo crear el producto");  
+   return true;
+}
+
+// 6. Actualizar producto
+async function updateProductAPI(id, payload) {
+    const res = await fetch(`/products/${id}`, {
+        method: 'PUT',
+        headers:{"Content-Type" : "application/json"},
+        credentials: "include",
+        body: JSON.stringify(payload) 
+    });
+    if(res.status === 401){ window.location.href = "/auth/login?expired=true"; return null;}
+    if(!res.ok) throw new Error((await res.json()).error || "No se pudo actualizar el producto");  
+    return true;
+}
+
+// 7. Importar Excel (Corregido el mensaje de error)
+async function adminImportExcelAPI(file) {
+    const formData = new FormData();
+    formData.append("excel", file);
+
+    const res = await fetch("/products/import-excel", {
+      method: 'POST',
+      credentials: "include",
+      body: formData
+    });
+
+    if (res.status === 401) { window.location.href = "/auth/login?expired=true"; return null; }
+
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok) throw new Error(data?.error || "Error importando el archivo Excel");  
+    return data;
 }

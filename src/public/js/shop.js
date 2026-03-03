@@ -2,6 +2,7 @@
    1. ESTADO DE SESIÓN
    ============================================ */
 
+/*
 function isLogged() {
   return document.body.getAttribute("data-logged") === "1";
 }
@@ -9,7 +10,7 @@ function isLogged() {
 function isAdmin(){
   return document.body.getAttribute("data-role") === "admin";
 }
-
+*/
 /* ============================================
    2. CARRITO GUEST (LocalStorage) 
    -> Movido a shop-cart.js
@@ -44,7 +45,6 @@ async function refreshCartBadge() {
     if(!items) return;
 
     const count = items.reduce((acc, it) => acc + (it.quantity || 0), 0);
-    userCartMap = new Map(items.map((i) => [String(i.productId), i.quantity]));
     
     badge.textContent = count;
     badge.hidden = count === 0;
@@ -174,7 +174,7 @@ function attachCatalogEvents() {
     if(editBtn && isAdmin()){
       const id = Number(editBtn.getAttribute("data-admin-edit"));
       const product = await fetchProductsAPI(true, "", id); // shop-api.js
-      adminEditingId = id; 
+      setAdminEditingId(id);
       fillAdminForm(product); 
       openAdminModal("edit");
       return;
@@ -232,16 +232,32 @@ function renderGuestCart() {
   modalTotal.textContent = formatPrice(guestCartTotal());
 }
 
-async function renderUserCart(){
+async function renderUserCart() {
   if(!modalItems || !modalTotal) return;
   const items = await fetchUserCartAPI();
-  if(!items || !items.length){
-    modalItems.innerHTML = "<p>Carrito vacío.</p>";
+
+  if(!items || items.length === 0){
+    modalItems.innerHTML = "<p>Tu carrito esta vacio.</p>";
     modalTotal.textContent = formatPrice(0);
     return;
   }
-  modalItems.innerHTML = items.map(i => `...mismo template...`).join(""); // (Template abreviado para brevedad)
-  modalTotal.textContent = formatPrice(items.reduce((acc, x) => acc + x.lineTotal, 0));
+  modalItems.innerHTML = items.map(i => `
+    <div class="cart-item" data-id="${i.productId}">
+      <img class="cart-item__img" src="${i.product?.image_url || ""}" alt="${i.product?.model || 'Producto'}"/>
+      <div class="cart-item__info">
+        <div>${i.product?.brand} ${i.product?.model}</div>
+        <div> ${formatPrice(i.priceAtTime)}</div>
+      </div>
+      <div class="cart-item__actions">
+        <button data-cart-inc>+</button>
+        <span>${i.quantity}</span>
+        <button data-cart-dec>-</button>
+        <button data-cart-remove>x</button>
+      </div>
+    </div>`).join("");
+  
+    const total = items.reduce((acc,x) => acc + (Number(x.priceAtTime) * x.quantity),0);
+    modalTotal.textContent = formatPrice(total);
 }
 
 async function openCart() {
@@ -254,11 +270,65 @@ async function openCart() {
    ============================================ */
 
 document.addEventListener("click", async (e) => {
-  if (e.target.closest("#navbar-cart-link")) { e.preventDefault(); await openCart(); }
-  if (e.target.closest("#guest-cart-close")) modal.hidden = true;
+  //1.Abrir carrito desde el navbar
+  if(e.target.closest("#navbar-cart-link")){
+    e.preventDefault();
+    await openCart();
+  }
+
+  //2.Cerrar el modal
+
+  if(e.target.closest("#guest-cart-close")){
+    modal.hidden = true;
+  }
+
+  //3.Detectar clics en elementos del carrito(necesitamos el id del product)
+  const cartItem = e.target.closest("[data-id]");
+  if(!cartItem){
+    //si el clicl fue el boton de finalizar compra(que no tiene data-id)
+    if(e.target.id === "checkout-btn"){
+      if(!isLogged()){
+        window.location.href = "/auth/login?redidect=checkout";
+      }else{
+        window.location.href = "/checkout";
+      }
+    }
+    return;
+  }
+
+  const productId = Number(cartItem.getAttribute("data-id"));
+
+  //BOTON DE ELIMINAR(X)
+  if(e.target.closest("[data-cart-remove]")){
+    if(!isLogged()){
+      const cart = getGuestCart().filter(i => i.productId !== productId);
+      setGuestCart(cart); 
+    }else {
+      await deleteCartItemAPI(productId);
+    }
+    await handleCartUpdateUI();
+    return;
+  }
+
+  //BOTONES SUMAR (+) Y RESTAR (-)
+  const inc = e.target.closest("[data-cart-inc]");
+  const dec = e.target.closest("[data-cart-dec]");
   
-  // Lógica de botones internos del modal simplificada con handleCartUpdateUI...
+
+  if(inc || dec){
+    const delta = inc ? 1 : -1;
+    if(!isLogged()) {
+      const product = getGuestCart().find (i => i.productId === productId);
+      if(product) addToGuestCart(product,delta, handleCartUpdateUI);
+    }else {
+      const currentQty = userCartMap.get(String(productId)) || 0;
+      const nextQty = Math.max(0,currentQty + delta);
+      const ok = await setUserCartQuantityAPI(productId, nextQty);
+      if(ok) await handleCartUpdateUI();
+    }
+  }
 });
+
 
 /* ============================================
    8. INIT (PUNTO 3: CONEXIÓN ADMIN)

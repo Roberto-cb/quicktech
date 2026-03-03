@@ -2,13 +2,19 @@
    QT_SHOP_ADMIN.JS - Gestión de Inventario y Excel
    ============================================================ */
 
+
+
+let adminEditingId = null;
 const adminModal = document.getElementById("admin-product-modal");
 const adminForm = document.getElementById("admin-product-form");
 const adminTitle = document.getElementById("admin-modal-title");
 const adminSaveBtn = document.getElementById("admin-modal-save");
 const adminExcelInput = document.getElementById("admin-excel-file");
 
-let adminEditingId = null;
+
+function setAdminEditingId(id){
+  adminEditingId = id;
+} 
 
 // 1. Manejo del Modal (Interfaz)
 function openAdminModal(mode){
