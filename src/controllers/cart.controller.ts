@@ -61,7 +61,7 @@ export const getCart = async (req: Request, res: Response): Promise<void> => {
 });
 
     const totalEst = items.reduce((acc, i) => acc + i.lineTotal, 0);
-    res.json({ items, totalEst }); // <-- respondemos
+    res.json({ data: items, totalEst }); // <-- respondemos
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener el carrito" });

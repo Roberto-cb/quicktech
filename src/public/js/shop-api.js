@@ -32,7 +32,10 @@ async function fetchProductsAPI(isAdminMode = false, query = "") {
 
 // 2. Obtener el carrito del usuario logueado
 async function fetchUserCartAPI() {
-    const res = await fetch("/cart", { headers: { Accept: "application/json" } });
+    const res = await fetch("/cart", { 
+    headers: { Accept: "application/json" },
+    credentials: "include" 
+    });
     
     if (res.status === 401) {
         window.location.href = "/auth/login?expired=true";
@@ -50,6 +53,7 @@ async function setUserCartQuantityAPI(productId, quantity) {
     const res = await fetch("/cart/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials:"include",
         body: JSON.stringify({ productId, quantity }),
     });
 
@@ -63,7 +67,10 @@ async function setUserCartQuantityAPI(productId, quantity) {
 // 4. Eliminar item o vaciar carrito
 async function deleteCartItemAPI(productId = null) {
     const url = productId ? `/cart/items/${productId}` : "/cart";
-    const res = await fetch(url, { method: "DELETE" });
+    const res = await fetch(url, { 
+        method: "DELETE",
+        credentials: "include" 
+    });
     
     if (res.status === 401) {
         window.location.href = "/auth/login?expired=true";

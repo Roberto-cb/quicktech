@@ -1,6 +1,3 @@
-/* ============================================
-   1. ESTADO DE SESIÓN
-   ============================================ */
 
 /*
 function isLogged() {
@@ -199,7 +196,10 @@ function attachCatalogEvents() {
       const currentQty = userCartMap.get(String(productId)) || 0;
       const nextQty = Math.max(0, currentQty + delta);
       const ok = await setUserCartQuantityAPI(productId, nextQty);
-      if(ok) handleCartUpdateUI();
+      if(ok) {
+           userCartMap.set(String(productId), nextQty); // Actualización inmediata
+           await handleCartUpdateUI();
+      }
     }
   });
 }
@@ -208,10 +208,11 @@ function attachCatalogEvents() {
    9. MODAL CARRITO & RENDER
    ============================================ */
 
-const modal = document.querySelector("#guest-cart-modal");
-const modalItems = document.querySelector("#guest-cart-items");
-const modalTotal = document.querySelector("#guest-cart-total");
+//const modal = document.querySelector("#guest-cart-modal");
+//const modalItems = document.querySelector("#guest-cart-items");
+//const modalTotal = document.querySelector("#guest-cart-total");
 
+/*
 function renderGuestCart() {
   if (!modalItems || !modalTotal) return;
   const items = getGuestCart();
@@ -231,38 +232,103 @@ function renderGuestCart() {
     </div>`).join("");
   modalTotal.textContent = formatPrice(guestCartTotal());
 }
-
+*/
 async function renderUserCart() {
-  if(!modalItems || !modalTotal) return;
-  const items = await fetchUserCartAPI();
-
-  if(!items || items.length === 0){
-    modalItems.innerHTML = "<p>Tu carrito esta vacio.</p>";
-    modalTotal.textContent = formatPrice(0);
-    return;
-  }
-  modalItems.innerHTML = items.map(i => `
-    <div class="cart-item" data-id="${i.productId}">
-      <img class="cart-item__img" src="${i.product?.image_url || ""}" alt="${i.product?.model || 'Producto'}"/>
-      <div class="cart-item__info">
-        <div>${i.product?.brand} ${i.product?.model}</div>
-        <div> ${formatPrice(i.priceAtTime)}</div>
-      </div>
-      <div class="cart-item__actions">
-        <button data-cart-inc>+</button>
-        <span>${i.quantity}</span>
-        <button data-cart-dec>-</button>
-        <button data-cart-remove>x</button>
-      </div>
-    </div>`).join("");
+  if (!modalItems || !modalTotal) return;
   
-    const total = items.reduce((acc,x) => acc + (Number(x.priceAtTime) * x.quantity),0);
-    modalTotal.textContent = formatPrice(total);
+  try {
+    const res = await fetchUserCartAPI();
+    
+    // Forzamos la lectura de .data basándonos en tu captura de pantalla
+    let items = [];
+    if (res && res.data && Array.isArray(res.data)) {
+      items = res.data;
+    } else if (Array.isArray(res)) {
+      items = res;
+    }
+
+    console.log("Items REALES a dibujar:", items);
+
+    if (items.length === 0) {
+      modalItems.innerHTML = "<p>Tu carrito está vacío.</p>";
+      modalTotal.textContent = formatPrice(0);
+      userCartMap.clear();
+      syncQuantities();
+      return;
+    }
+
+    userCartMap = new Map(items.map(i => [String(i.productId), i.quantity]));
+
+    modalItems.innerHTML = items.map(i => {
+      // Usamos exactamente los nombres que se ven en tu captura (name, price, image_url)
+      const name = i.name || "Producto";
+      const price = Number(i.price || 0);
+      const img = i.image_url || "";
+
+      return `
+      <div class="cart-item" data-id="${i.productId}">
+        <img class="cart-item__img" src="${img}" alt="${name}"/>
+        <div class="cart-item__info">
+          <div><strong>${name}</strong></div>
+          <div>${formatPrice(price)} x ${i.quantity}</div>
+        </div>
+        <div class="cart-item__actions">
+          <button type="button" data-cart-inc>+</button>
+          <span>${i.quantity}</span>
+          <button type="button" data-cart-dec>-</button>
+          <button type="button" data-cart-remove>✕</button>
+        </div>
+      </div>`;
+    }).join("");
+    
+    // Usamos el total que ya calculó el servidor (se ve en tu imagen como totalEst)
+    const totalMostrado = res.totalEst || items.reduce((acc, x) => acc + (Number(x.price || 0) * x.quantity), 0);
+    modalTotal.textContent = formatPrice(totalMostrado);
+
+  } catch (error) {
+    console.error("Error crítico en renderUserCart:", error);
+    modalItems.innerHTML = "<p>Error al sincronizar datos.</p>";
+  }
 }
 
 async function openCart() {
-  !isLogged() ? renderGuestCart() : await renderUserCart();
-  if (modal) modal.hidden = false;
+  if(!isLogged()) {
+    renderGuestCart();
+  }else{
+    await renderUserCart();
+  }
+
+  if(modal){
+    modal.hidden = false;
+
+    requestAnimationFrame(positionCartDropdown);
+  }
+}
+
+//Cerrar: Vulve poner el hidden:
+
+function closeCart() {
+  if(modal) modal.hidden =true;
+}
+
+
+function positionCartDropdown(){
+  const anchor = document.querySelector("#navbar-cart-link");
+  const panel = modal?.querySelector(".modal-content");
+
+  if(!anchor || !panel || !modal || modal.hidden)return;
+
+  const r = anchor.getBoundingClientRect();
+
+  const top = r.bottom + 10;
+  const panelWidth = panel.offsetWidth || 380;
+  
+  let left = r.right - panelWidth;
+  left = Math.max(10,Math.min(left,window.innerWidth - panelWidth - 10));
+
+  panel.style.top = `${top}px`;
+  panel.style.left = `${left}px`;
+  panel.style.position = "fixed";
 }
 
 /* ============================================
@@ -278,23 +344,38 @@ document.addEventListener("click", async (e) => {
 
   //2.Cerrar el modal
 
-  if(e.target.closest("#guest-cart-close")){
-    modal.hidden = true;
+  if (e.target.closest("#guest-cart-close") || e.target.classList.contains("modal-backdrop")) {
+    closeCart(); // Usa tu función ya creada
+}
+  if(e.target.id === "admin-modal-close" || e.target.id === "admin-modal-cancel" || e.target.closest(".modal-backdrop")){
+    if (typeof closeAdminModal === 'function') closeAdminModal();
   }
 
   //3.Detectar clics en elementos del carrito(necesitamos el id del product)
-  const cartItem = e.target.closest("[data-id]");
-  if(!cartItem){
-    //si el clicl fue el boton de finalizar compra(que no tiene data-id)
-    if(e.target.id === "checkout-btn"){
-      if(!isLogged()){
-        window.location.href = "/auth/login?redidect=checkout";
-      }else{
-        window.location.href = "/checkout";
-      }
+  if(e.target.id === "guest-cart-clear"){
+    if(!isLogged()) {
+      setGuestCart([]);
+    } else {
+      await deleteCartItemAPI();
+    }
+    await handleCartUpdateUI();
+    return;
+  }
+
+  //BOTON continuar compra
+  if(e.target.id === "guest-cart-continue"){
+    if(!isLogged()){
+      window.location.href="/auth/login?redirect=checkout";
+    }else {
+      window.location.href="/checkout";
     }
     return;
   }
+
+  
+  const cartItem = e.target.closest("[data-id]");
+  if(!cartItem)return;
+
 
   const productId = Number(cartItem.getAttribute("data-id"));
 
@@ -307,6 +388,15 @@ document.addEventListener("click", async (e) => {
       await deleteCartItemAPI(productId);
     }
     await handleCartUpdateUI();
+    return;
+  }
+
+  if(e.target.id === "guest-cart-continue") {
+    if(!isLogged()) {
+      window.location.href = "/auth/login?redirect=checkout";
+    } else {
+      window.location.href="/checkout";
+    }
     return;
   }
 
@@ -324,9 +414,19 @@ document.addEventListener("click", async (e) => {
       const currentQty = userCartMap.get(String(productId)) || 0;
       const nextQty = Math.max(0,currentQty + delta);
       const ok = await setUserCartQuantityAPI(productId, nextQty);
-      if(ok) await handleCartUpdateUI();
+      if(ok) {
+        if(nextQty > 0){
+          userCartMap.set(String(productId),nextQty);
+        }else{
+          userCartMap.delete(String(productId));
+        }
+        await handleCartUpdateUI();
+      }
     }
   }
+
+
+
 });
 
 
@@ -335,13 +435,33 @@ document.addEventListener("click", async (e) => {
    ============================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // 1. ejecutar el merge.
   await mergeGuestCartIfLogged(); // shop-cart.js llamando a shop-api.js
-  await refreshCartBadge();
-   
+  
+  //await refreshCartBadge();
+  //2.Importante: Si estamos loguados,cargar el mapa de sesion de inmediato
+  if(isLogged()) {
+    const res = await fetchUserCartAPI();
+    const items = res?.data || res?.items || [];
+    userCartMap = new Map(items.map(i=>[String(i.productId),i.quantity]));
+  }
+
+  //3.Refrescar UI completa:
+  await handleCartUpdateUI();
+  
   if (grid) {
     await loadProducts();
     attachCatalogEvents();
   }
+  
+ const addBtn = document.getElementById("admin-create-product"); 
+if(addBtn){
+  addBtn.addEventListener("click", () => {
+    console.log("Botón presionado, abriendo modal..."); // Esto es para que verifiques en la consola
+    setAdminEditingId(null);
+    openAdminModal("create");
+  });
+}
 
   // CONFIGURACIÓN PUNTO 3: Conexión con shop-admin.js
   const adminForm = document.getElementById("admin-product-form");

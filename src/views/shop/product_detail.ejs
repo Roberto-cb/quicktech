@@ -3,7 +3,10 @@
   <% const pageTitle = product ? `${product.brand} - ${product.model}` : "Detalle de producto"; %>
   <%- include('../partials/head', { title: pageTitle }) %>
 
-  <body>
+  <body
+    data-logged="<%= (typeof user !== 'undefined' && user) ? '1' : '0' %>"
+    data-role="<%= (typeof user !== 'undefined' && user && user.role) ? user.role : '' %>"
+  >
     <%- include('../partials/navbar') %>
 
     <main>
@@ -13,7 +16,6 @@
 
       <% if (product) { %>
         <article class="product-detail">
-          <!-- Columna izquierda: imagen -->
           <div class="product-detail__media">
             <div class="product-detail__image">
               <img
@@ -23,7 +25,6 @@
             </div>
           </div>
 
-          <!-- Columna derecha: info -->
           <div class="product-detail__info">
             <h1 class="product-detail__title"><%= product.brand %> - <%= product.model %></h1>
 
@@ -44,10 +45,14 @@
             <% } %>
 
             <div class="product-detail__actions">
-              <!-- Mantengo tu misma funcionalidad (POST /cart/items) -->
-              <form method="POST" action="/cart/items" style="display:flex; gap:.5rem; align-items:center;">
-                <input type="hidden" name="productId" value="<%= product.id %>" />
-                <input type="number" name="quantity" min="1" value="1" style="width:72px; text-align:center;">
+              <form id="add-to-cart-form" 
+                    data-name="<%= product.brand %> <%= product.model %>"
+                    data-price="<%= product.price %>"
+                    data-img="<%= product.image_url %>"
+                    style="display:flex; gap:.5rem; align-items:center;">
+                
+                <input type="hidden" id="detail-product-id" value="<%= product.id %>" />
+                <input type="number" id="detail-quantity" min="1" value="1" style="width:72px; text-align:center;">
                 <button class="btn btn-primary" type="submit">Agregar al carrito</button>
               </form>
 
@@ -74,7 +79,6 @@
                 </ul>
               </section>
             <% } %>
-
           </div>
         </article>
       <% } else { %>
@@ -85,6 +89,26 @@
       <% } %>
     </main>
 
+    <div id="guest-cart-modal" class="modal" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <button class="modal-close" id="guest-cart-close" aria-label="Cerrar">x</button>
+        <h2>Tu carrito</h2>
+        <div id="guest-cart-items"></div>
+        <div class="cart-footer">
+          <div>Total: <strong id="guest-cart-total">$0</strong></div>
+          <button id="guest-cart-clear" class="btn btn-ghost">vaciar</button>
+          <button id="guest-cart-continue" class="btn">Continuar su compra</button>
+        </div>
+      </div>
+    </div>
+
     <%- include('../partials/footer') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/shop-cart.js"></script>
+    <script src="/js/shop-api.js"></script>
+    <script src="/js/shop.js"></script>
+    <script src="/js/product-detail.js"></script>
   </body>
 </html>
