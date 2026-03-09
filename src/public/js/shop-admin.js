@@ -38,20 +38,30 @@ function closeAdminModal(){
 // 2. Lógica de Datos (Carga y Armado de Payload)
 
 // Rellena el formulario con los datos del producto para editar
-function fillAdminForm(p){
-  if(!adminForm) return;
-  adminForm.querySelector('[name="brand"]').value = p.brand ?? "";
-  adminForm.querySelector('[name="model"]').value = p.model ?? "";
-  adminForm.querySelector('[name="category"]').value = p.category ?? "";
-  adminForm.querySelector('[name="type"]').value = p.type ?? "";
-  adminForm.querySelector('[name="price"]').value = String(p.price ?? "");
-  adminForm.querySelector('[name="stock"]').value = String(p.stock);
-  adminForm.querySelector('[name="image_url"]').value = p.image_url ?? "";
-  adminForm.querySelector('[name="features"]').value = p.features ?? "";
-  adminForm.querySelector('[name="dimensions"]').value = JSON.stringify(p.dimensions ?? {}, null, 2);
+function fillAdminForm(response){
+
+  const data = response.data;
+ 
+
+  console.log("Datos recibidos para editar:", data);
+
+  if(!adminForm || !data) return;
+
+  adminForm.querySelector('[name="brand"]').value = data.brand ?? "";
+  adminForm.querySelector('[name="model"]').value = data.model ?? "";
+  adminForm.querySelector('[name="category"]').value = data.category ?? "";
+  adminForm.querySelector('[name="type"]').value = data.type ?? "";
+  adminForm.querySelector('[name="price"]').value = String(data.price ?? "");
+  adminForm.querySelector('[name="stock"]').value = String(data.stock ?? 0);
+  adminForm.querySelector('[name="image_url"]').value = data.image_url ?? "";
+  adminForm.querySelector('[name="features"]').value = data.features ?? "";
   
+  
+  const dims = data.dimensions || {};
+  adminForm.querySelector('[name="dimensions"]').value = JSON.stringify(dims, null, 2);
+
   const idInput = adminForm.querySelector('input[name="id"]');
-  if(idInput) idInput.value = String(p.id);
+  if (idInput) idInput.value = String(data.id || "");
 }
 
 // Lee el formulario y crea el objeto para enviar al servidor

@@ -10,9 +10,17 @@ function isAdmin(){
   return document.body.getAttribute("data-role") === "admin";
 }
 // 1. Obtener el catálogo de productos
-async function fetchProductsAPI(isAdminMode = false, query = "") {
+async function fetchProductsAPI(isAdminMode = false, query = "", id = null) {
+
     const baseUrl = isAdminMode ? "/products/admin" : "/products";
-    const apiUrl = query ? `${baseUrl}?q=${encodeURIComponent(query)}` : baseUrl;
+
+    let apiUrl;
+
+    if(id){
+        apiUrl = `${baseUrl}/${id}`;
+    } else {
+        apiUrl = query ? `${baseUrl}?q=${encodeURIComponent(query)}` : baseUrl;
+    }
 
     const res = await fetch(apiUrl, {
         headers: { Accept: "application/json" },
@@ -27,7 +35,10 @@ async function fetchProductsAPI(isAdminMode = false, query = "") {
     if (!res.ok) throw new Error("Error en la red al cargar productos");
     
     const json = await res.json();
-    return json.data ?? json.items ?? json;
+
+    return {
+        data: json.data ?? json.items ?? json
+    };
 }
 
 // 2. Obtener el carrito del usuario logueado

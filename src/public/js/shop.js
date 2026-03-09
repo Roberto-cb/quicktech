@@ -1,5 +1,5 @@
 
-/*
+
 function isLogged() {
   return document.body.getAttribute("data-logged") === "1";
 }
@@ -7,7 +7,7 @@ function isLogged() {
 function isAdmin(){
   return document.body.getAttribute("data-role") === "admin";
 }
-*/
+
 /* ============================================
    2. CARRITO GUEST (LocalStorage) 
    -> Movido a shop-cart.js
@@ -121,18 +121,32 @@ async function loadProducts() {
     const params = new URLSearchParams(window.location.search);
     const q = (params.get("q") || "").trim();
 
-    // Llamada a shop-api.js
-    const products = await fetchProductsAPI(isAdmin(), q);
-    if (products === null) return;
-
-    if (!products.length) {
-      grid.innerHTML = q ? `<p>No se encontró: <strong>${q}</strong></p>` : "<p>No hay productos.</p>";
+    // 1. Llamamos a la API
+    const response = await fetchProductsAPI(isAdmin(), q);
+    
+    // 2. Extraemos la lista de productos de la propiedad .data
+    // Si la API devolvió null o no tiene data, salimos
+    if (!response || !response.data) {
+      grid.innerHTML = "<p>No hay productos disponibles.</p>";
       return;
     }
 
+    const products = response.data; // <--- ESTA LÍNEA ES LA CLAVE
+
+    // 3. Ahora sí, verificamos el largo de la lista de productos
+    if (products.length === 0) {
+      grid.innerHTML = q 
+        ? `<p>No se encontró: <strong>${q}</strong></p>` 
+        : "<p>No hay productos disponibles.</p>";
+      return;
+    }
+
+    // 4. Dibujamos las cards
     grid.innerHTML = products.map(productCard).join("");
     syncQuantities();
+    
   } catch (err) {
+    console.error("Error cargando el catálogo:", err);
     grid.innerHTML = "<p>Error al cargar catálogo.</p>";
   }
 }
@@ -170,10 +184,22 @@ function attachCatalogEvents() {
     const editBtn = e.target.closest("[data-admin-edit]");
     if(editBtn && isAdmin()){
       const id = Number(editBtn.getAttribute("data-admin-edit"));
-      const product = await fetchProductsAPI(true, "", id); // shop-api.js
-      setAdminEditingId(id);
-      fillAdminForm(product); 
-      openAdminModal("edit");
+      
+
+      try{
+        const response = await fetchProductsAPI(true, "", id); 
+      
+      // 2. Verificamos que tengamos datos
+      if (response && response.data) {
+        setAdminEditingId(id);   // De shop-admin.js
+        fillAdminForm(response); // De shop-admin.js
+        openAdminModal("edit");  // De shop-admin.js
+      } else {
+        Swal.fire("Error", "No se pudo obtener la informacion del product.", "error");
+      }
+      }catch(err){
+       console.error("  Error al cargar producto para edicion:", err);
+       }
       return;
     }
 

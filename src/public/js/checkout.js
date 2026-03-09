@@ -182,7 +182,9 @@ async function handleCheckout() {
         showCancelButton: true,
         confirmButtonColor: '#28a745',
         confirmButtonText: 'Sí, comprar',
-        cancelButtonText: 'Cancelar'
+        cancelButtonText: 'Cancelar',
+        background: '#1a1a1a', // Agregado para que no sea blanca
+        color: '#ffffff'
     });
 
     if (!confirm.isConfirmed) return;
