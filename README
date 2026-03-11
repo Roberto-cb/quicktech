@@ -1,145 +1,48 @@
-Proyecto QuickTech – E‑Commerce de Periféricos Gamer
-1. Tecnologías y dependencias
+# 🚀 QuickTech - E-commerce de Tecnología
 
-Backend: Node.js + Express + TypeScript.
+QuickTech es una plataforma de comercio electrónico integral desarrollada con un stack moderno. Permite a los usuarios navegar por un catálogo de productos tecnológicos, gestionar un carrito de compras y realizar pedidos, mientras ofrece a los administradores herramientas potentes para la gestión de inventario.
 
-Base de datos: MySQL (gestionada con Prisma ORM).
+## 🛠️ Tecnologías Utilizadas
 
-Autenticación: JWT (JSON Web Tokens), con hash de contraseñas usando bcrypt.
+- **Backend:** Node.js con Express y TypeScript.
+- **Base de Datos:** PostgreSQL gestionado a través de **Prisma ORM**.
+- **Frontend:** Plantillas **EJS**, CSS3 y JavaScript Vanilla.
+- **Autenticación:** JSON Web Tokens (JWT) y cookies seguras.
+- **Herramientas:** Docker & Docker Compose, Multer (para carga de archivos) y SweetAlert2.
 
-Frontend: Vistas con EJS + estilos en CSS. (Se planea migrar a un frontend más completo).
+## ✨ Características Principales
 
-Otros paquetes:
+### 👤 Para Clientes
+- **Catálogo Dinámico:** Búsqueda y filtrado de productos en tiempo real.
+- **Carrito de Compras:** Persistencia tanto para usuarios visitantes (LocalStorage) como para usuarios logueados (Base de Datos).
+- **Gestión de Perfil:** Historial de órdenes y gestión de tarjetas de pago (simuladas).
+- **Checkout Seguro:** Validación de stock e integridad de productos antes de la compra.
 
-express-validator (validaciones).
+### 🔐 Para Administradores
+- **Panel de Control:** Creación, edición y desactivación de productos directamente desde la interfaz.
+- **Importación Masiva:** Carga de inventario a través de archivos **Excel**.
+- **Gestión de Stock:** Control detallado de existencias y especificaciones técnicas (JSON).
 
-dotenv (variables de entorno).
+## 📦 Instalación y Configuración
 
-cookie-parser, method-override, morgan.
+Sigue estos pasos para ejecutar el proyecto en tu entorno local (Linux Mint/Ubuntu):
 
-multer, sweetalert2, notyf (para carga de imágenes y notificaciones).
+1. **Clonar el repositorio:**
 
-2. Estructura del proyecto
-src/
-│── controllers/    # Lógica de negocio (users, products, orders, cart, auth)
-│── routes/         # Rutas Express por entidad
-│── models/         # Modelos Prisma conectados a MySQL
-│── interfaces/     # Interfaces TypeScript (User, Product, Sale, etc.)
-│── services/       # Servicios auxiliares (hash, JWT, lógica de negocio)
-│── middlewares/    # Ej. verifyToken para autenticación
-│── views/          # Plantillas EJS (frontend básico)
-|   auth/
-     login.ejs
-     register.ejs
-|   layouts/
-     main.ejs
-|   partials/
-    footer.ejs
-    navbar.ejs
-|   shop/
-    home.ejs
-    product_detail.ejs        
-│── public/         # Archivos estáticos (CSS, JS, imágenes)
-    css/
-    #style.css
-    js/
-    auth.js
-app.ts              # Configuración del servidor Express
-server.ts           # Inicialización del servidor
-3. Base de datos (MySQL + Prisma)
+   git clone <tu-url-de-github>
+   cd quicktech
 
-Usuarios: con rol por defecto cliente (solo admin puede registrar productos).
+2. **Instalar dependencias:**
 
-Productos: incluye tipo, categoría, marca, modelo, precio (Decimal), stock, características, dimensiones (JSON) e imagen_url.
+   npm install
+3. **Configurar variables de entorno:**
 
-Ventas y Detalle_Ventas (relación entre usuario y productos comprados).
+   DATABASE_URL="postgresql://usuario:password@localhost:5432/quicktech_db"
+   JWT_SECRET="tu_secreto_super_seguro"
+   PORT=3000
+4. **Preparar la Base de Datos:**
 
-Carrito y CartItems: manejan productos agregados antes de la compra.
+   npx prisma migrate dev --name init
+5. **Iniciar el servidor:**
 
-4. Autenticación y autorización
-
-Registro y login de usuarios con validación.
-
-Hash de contraseñas con bcrypt.
-
-JWT generado al iniciar sesión.
-
-Middleware verifyToken protege rutas privadas (ej. /cart, /orders).
-
-5. Módulos implementados
-Usuarios (users)
-
-CRUD completo.
-
-Validaciones (edad mínima 18, email único, DNI único).
-
-Login y registro con JWT.
-
-Productos (products)
-
-CRUD completo (solo admin crea/edita productos).
-
-Campos especiales:
-
-precio como Decimal con new Prisma.Decimal(price).
-
-dimensiones como JSON válido.
-
-características como texto plano.
-
-Pedidos/Ventas (orders)
-
-Manejo de tabla ventas y detalle_ventas.
-
-Al generar una orden se crean registros en ambas tablas.
-
-Se descuenta el stock de productos involucrados.
-
-Carrito (cart)
-
-Endpoints:
-
-GET /cart → devuelve productos en el carrito y total estimado.
-
-POST /cart/items → agrega o actualiza un producto en el carrito.
-
-DELETE /cart/items/:productId → elimina un producto específico del carrito.
-
-DELETE /cart → vacía el carrito.
-
-POST /cart/checkout → genera una venta desde el carrito y lo vacía.
-
-Correcciones aplicadas:
-
-getCart ahora responde correctamente con items y totalEst.
-
-clearCart corrige typo (cleared: true).
-
-removeCartItem toma productId desde req.params y valida el valor.
-
-6. Avances de testing
-
-Probado con Postman:
-
-Registro y login de usuarios ✅.
-
-CRUD de usuarios y productos ✅.
-
-CRUD de órdenes parcialmente ✅
-CRUD de carrito en revisión  ✅
-
-7. Próximos pasos
-
-Retestear endpoints de Carrito y Órdenes con Postman.
-
-Implementar vistas EJS para:
-
-Catálogo de productos.
-
-Carrito interactivo.
-
-Checkout con confirmación de compra.
-
-Preparar despliegue (Docker o hosting en la nube).
-
-Optimizar validaciones y manejo de errores globales.
+   npm run dev
