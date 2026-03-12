@@ -2,9 +2,16 @@
 import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import userRepo from '../models/user';
-import { comparePassword, hashPassword } from '../services/password.service';
+
 import { generateToken } from '../services/auth.service';
-import { generateResetToken, hashResetToken, getResetExpiresAt } from '../services/password.service';
+import { 
+  comparePassword, 
+  hashPassword, 
+  generateResetToken, 
+  getResetExpiresAt, 
+  sendResetEmail,
+  hashResetToken
+} from '../services/password.service';
 
 
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -180,10 +187,11 @@ export const forgotPassword = async (req:Request, res: Response)=>{
         error: null,
       });
     }
-
-    const {token, tokenHash} = generateResetToken();
-    const expiresAt = getResetExpiresAt(30);
+    //1.Generamos los token y expiracion
+    const {resetToken: token, passwordResetToken:tokenHash} = generateResetToken();
+    const expiresAt = getResetExpiresAt();
     
+    //2.Guardamos en la base de datos
     await userRepo.update({
       where: {id: user.id},
       data:{
@@ -194,21 +202,30 @@ export const forgotPassword = async (req:Request, res: Response)=>{
       select: {id: true},
     });
 
+    //3.Construimos en enlace
+
     const appUrl = process.env.APP_URL || "http://localhost:3000";
     const resetLink = `${appUrl}/auth/reset-password?token=${token}`;
 
-    console.log("Reset Link",resetLink);
+    //4.LLAMADA A NODEMAILER
+    try {
+      await sendResetEmail(user.email,resetLink);
+      console.log("Correo enviado con exito a:",user.email);
+    } catch(mailError){
+      //Logeamos el error pero no se lo mostramos al usuario para no darle pistas
+      console.error("Error critico de Nodemailer",mailError);
+    }
 
     return res.render("auth/forgot-password", {
       message: genericMsg,
       error: null,
     });
   }catch(error){
-    console.error(error);
+    console.error("Error en forgotPassword:",error);
     return res.status(500).render("auth/forgot-password",{
       message: null,
       error: "Hubo un error en el sistema.",
-    })
+    });
   }
 };
 

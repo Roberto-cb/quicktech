@@ -46,3 +46,4 @@ Sigue estos pasos para ejecutar el proyecto en tu entorno local (Linux Mint/Ubun
 5. **Iniciar el servidor:**
 
    npm run dev
+
