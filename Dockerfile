@@ -1,7 +1,10 @@
 FROM node:20-slim
 
-# Instalamos dependencias del sistema necesarias para Prisma
-RUN apt-get update && apt-get install -y openssl libssl-dev && rm -rf /var/lib/apt/lists/*
+# ACTUALIZADO: Agregamos ca-certificates y update-ca-certificates
+RUN apt-get update && \
+    apt-get install -y openssl libssl-dev ca-certificates && \
+    update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -21,12 +24,10 @@ COPY . .
 # Ejecutamos el build de TypeScript
 RUN npm run build
 
-# --- AJUSTE DEFINITIVO PARA TU ESTRUCTURA ---
 # Nos aseguramos de que existan las carpetas de destino en dist
 RUN mkdir -p dist/views dist/public
 
 # Copiamos el contenido visual desde src/ hacia dist/
-# Usamos el punto "." para copiar el contenido de las carpetas correctamente
 RUN cp -r src/views/. dist/views/ || true
 RUN cp -r src/public/. dist/public/ || true
 

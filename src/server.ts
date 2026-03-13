@@ -8,4 +8,3 @@ app.listen(PORT,()=>{
     console.log(`server is running Local: http://localhost:${PORT}`)
 });
 
-//console.log(`server is running on port ${PORT}`)
