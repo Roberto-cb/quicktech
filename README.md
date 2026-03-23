@@ -49,18 +49,20 @@ cd quicktech
 npm install
 ``` 
 3. **Configurar variables de entorno:**
+   
    ```bash
 DATABASE_URL="mysql://usuario:password@host:4000/test?sslaccept=strict"
 JWT_SECRET="tu_secreto_super_seguro"
 PORT=3000
 NODE_ENV="development"
-```
+    ```
+
 4. **Preparar la Base de Datos:**
    # Genera el cliente de Prisma basado en el schema
    ```bash
 npx prisma generate
 ```
-   # Sincroniza el modelo con la base de datos en TiDB
+# Sincroniza el modelo con la base de datos en TiDB
    ```bash
 npx prisma db push
 ```
