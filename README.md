@@ -39,35 +39,34 @@ QuickTech es una plataforma de comercio electrónico integral desarrollada con u
 Para ejecutar QuickTech en tu entorno (probado en **Linux Mint/Ubuntu**):
 
 1. **Clonar y acceder:**
-   ```bash
+```bash
 git clone <tu-url-de-github>
 cd quicktech
 ```
 
 2. **Instalar dependencias:**
-   ```bash
+```bash
 npm install
 ``` 
 3. **Configurar variables de entorno:**
-   
-   ```bash
+```bash
 DATABASE_URL="mysql://usuario:password@host:4000/test?sslaccept=strict"
 JWT_SECRET="tu_secreto_super_seguro"
 PORT=3000
 NODE_ENV="development"
-    ```
+```
 
 4. **Preparar la Base de Datos:**
-   # Genera el cliente de Prisma basado en el schema
-   ```bash
+ # Genera el cliente de Prisma basado en el schema
+```bash
 npx prisma generate
 ```
 # Sincroniza el modelo con la base de datos en TiDB
-   ```bash
+ ```bash
 npx prisma db push
 ```
 5. **Iniciar el servidor:**
-   ```bash
+ ```bash
 npm run dev
 ```
 ---
