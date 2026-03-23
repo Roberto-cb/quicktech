@@ -68,22 +68,23 @@ Para ejecutar QuickTech en tu entorno (probado en **Linux Mint/Ubuntu**):
    ```bash
    npm run dev
    ```
+---
 ## 📸 Vista Previa de la Plataforma
 
 ### 💻 Experiencia del Cliente
 <p align="center">
-  <img src="./screenshots/home.png" width="850" title="Catálogo QuickTech">
+  <img src="screenshots/home.png" width="850" title="Catálogo QuickTech">
 </p>
 
 | Detalle Técnico del Producto | Carrito de Compras Dinámico |
 | :---: | :---: |
-| ![Detalle](./screenshots/product_detail.png) | ![Carrito](./screenshots/carrito.png) |
+| ![Detalle](screenshots/product_detail.png) | ![Carrito](screenshots/carrito.png) |
 | *Visualización de specs técnicos desde DB* | *Gestión de cantidades y persistencia* |
 
 ### 🛠️ Proceso de Compra y Gestión
 | Resumen y Checkout | Panel de Administración (CRUD) |
 | :---: | :---: |
-| ![Checkout](./screenshots/checkout.png) | ![Admin](./screenshots/admin_crud_products.png) |
+| ![Checkout](screenshots/checkout.png) | ![Admin](screenshots/admin_crud_products.png) |
 | *Validación de stock e integridad de orden* | *Interfaz de gestión de inventario para admins* |
 
 
