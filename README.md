@@ -1,0 +1,93 @@
+# 🚀 QuickTech - E-commerce de Tecnología
+
+QuickTech es una plataforma de comercio electrónico integral desarrollada con un stack moderno y escalable. El proyecto implementa una **arquitectura híbrida** capaz de servir contenido renderizado [...]
+
+---
+
+## 🛠️ Stack Tecnológico
+
+* **Backend:** Node.js con **TypeScript** y Express.
+* **Base de Datos:** MySQL (Cluster Serverless en **TiDB Cloud / AWS**).
+* **ORM:** **Prisma** para el modelado de datos y gestión de migraciones.
+* **Infraestructura:** Contenerización con **Docker** y despliegue automatizado en **Render**.
+* **Frontend:** Motor de plantillas **EJS**, arquitectura CSS modular y JavaScript Vanilla.
+* **Seguridad:** Autenticación basada en **JWT (JSON Web Tokens)** almacenados en cookies `httpOnly` y hasheo de contraseñas con **Bcrypt**.
+
+---
+
+## ✨ Características Destacadas
+
+### 🔐 Seguridad y Autenticación
+* **Flujo Completo de Auth:** Registro, Login y Logout con manejo de sesiones seguras.
+* **Recuperación de Contraseña:** Sistema de restablecimiento mediante tokens de un solo uso y envío de correos con **Nodemailer**.
+* **Middleware de Autorización:** Protección de rutas críticas según el rol del usuario (`client` / `admin`).
+
+### 📦 Gestión de Productos y Pedidos
+* **Catálogo Dinámico:** Filtrado eficiente de productos interactuando directamente con la base de datos.
+* **Persistencia de Carrito:** Sincronización inteligente entre el estado local y la base de datos al iniciar sesión.
+* **Arquitectura Híbrida:** El backend detecta el origen de la petición (Formulario HTML o JSON) para responder de forma óptima (Redirect o API Response).
+
+### 🛠️ Panel Administrativo
+* **CRUD Avanzado:** Gestión total de inventario, incluyendo especificaciones técnicas en formato JSON.
+* **Carga de Imágenes:** Implementación de **Multer** para el manejo de archivos en el servidor.
+* **Estado de Stock:** Validación en tiempo real para evitar inconsistencias en las órdenes de compra.
+
+---
+
+## 📦 Instalación y Configuración (Entorno Local)
+
+Para ejecutar QuickTech en tu entorno (probado en **Linux Mint/Ubuntu**):
+
+1. **Clonar y acceder:**
+   ```bash
+git clone <tu-url-de-github>
+cd quicktech
+```
+
+2. **Instalar dependencias:**
+   ```bash
+npm install
+``` 
+3. **Configurar variables de entorno:**
+   ```bash
+DATABASE_URL="mysql://usuario:password@host:4000/test?sslaccept=strict"
+JWT_SECRET="tu_secreto_super_seguro"
+PORT=3000
+NODE_ENV="development"
+```
+4. **Preparar la Base de Datos:**
+   # Genera el cliente de Prisma basado en el schema
+   ```bash
+npx prisma generate
+```
+   # Sincroniza el modelo con la base de datos en TiDB
+   ```bash
+npx prisma db push
+```
+5. **Iniciar el servidor:**
+   ```bash
+npm run dev
+```
+---
+## 📸 Vista Previa de la Plataforma
+
+### 💻 Experiencia del Cliente
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Roberto-cb/quicktech/main/screenshots/home.png" width="850" title="Catálogo QuickTech">
+</p>
+
+| Detalle Técnico del Producto | Carrito de Compras Dinámico |
+| :---: | :---: |
+| ![Detalle](https://raw.githubusercontent.com/Roberto-cb/quicktech/main/screenshots/product_detail.png) | ![Carrito](https://raw.githubusercontent.com/Roberto-cb/quicktech/main/screenshots/carrito.png) |
+| *Visualización de specs técnicos desde DB* | *Gestión de cantidades y persistencia* |
+
+### 🛠️ Proceso de Compra y Gestión
+| Resumen y Checkout | Panel de Administración (CRUD) |
+| :---: | :---: |
+| ![Checkout](https://raw.githubusercontent.com/Roberto-cb/quicktech/main/screenshots/checkout.png) | ![Admin](https://raw.githubusercontent.com/Roberto-cb/quicktech/main/screenshots/admin_crud_products.png) |
+| *Validación de stock e integridad de orden* | *Interfaz de gestión de inventario para admins* |
+
+### 📷 Galería Adicional
+![Home Screen](https://raw.githubusercontent.com/Roberto-cb/quicktech/main/screenshots/home.png)
+![About Screen](https://raw.githubusercontent.com/Roberto-cb/quicktech/main/screenshots/about.png)
+![Contact Screen](https://raw.githubusercontent.com/Roberto-cb/quicktech/main/screenshots/contact.png)
