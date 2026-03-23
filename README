@@ -1,34 +1,45 @@
 # 🚀 QuickTech - E-commerce de Tecnología
 
-QuickTech es una plataforma de comercio electrónico integral desarrollada con un stack moderno. Permite a los usuarios navegar por un catálogo de productos tecnológicos, gestionar un carrito de compras y realizar pedidos, mientras ofrece a los administradores herramientas potentes para la gestión de inventario.
+QuickTech es una plataforma de comercio electrónico integral desarrollada con un stack moderno y escalable. El proyecto implementa una **arquitectura híbrida** capaz de servir contenido renderizado en el servidor (SSR) mediante EJS, manteniendo una estructura de API robusta para la gestión de datos.
 
-## 🛠️ Tecnologías Utilizadas
+---
 
-- **Backend:** Node.js con Express y TypeScript.
-- **Base de Datos:** PostgreSQL gestionado a través de **Prisma ORM**.
-- **Frontend:** Plantillas **EJS**, CSS3 y JavaScript Vanilla.
-- **Autenticación:** JSON Web Tokens (JWT) y cookies seguras.
-- **Herramientas:** Docker & Docker Compose, Multer (para carga de archivos) y SweetAlert2.
+## 🛠️ Stack Tecnológico
 
-## ✨ Características Principales
+* **Backend:** Node.js con **TypeScript** y Express.
+* **Base de Datos:** MySQL (Cluster Serverless en **TiDB Cloud / AWS**).
+* **ORM:** **Prisma** para el modelado de datos y gestión de migraciones.
+* **Infraestructura:** Contenerización con **Docker** y despliegue automatizado en **Render**.
+* **Frontend:** Motor de plantillas **EJS**, arquitectura CSS modular y JavaScript Vanilla.
+* **Seguridad:** Autenticación basada en **JWT (JSON Web Tokens)** almacenados en cookies `httpOnly` y hasheo de contraseñas con **Bcrypt**.
 
-### 👤 Para Clientes
-- **Catálogo Dinámico:** Búsqueda y filtrado de productos en tiempo real.
-- **Carrito de Compras:** Persistencia tanto para usuarios visitantes (LocalStorage) como para usuarios logueados (Base de Datos).
-- **Gestión de Perfil:** Historial de órdenes y gestión de tarjetas de pago (simuladas).
-- **Checkout Seguro:** Validación de stock e integridad de productos antes de la compra.
+---
 
-### 🔐 Para Administradores
-- **Panel de Control:** Creación, edición y desactivación de productos directamente desde la interfaz.
-- **Importación Masiva:** Carga de inventario a través de archivos **Excel**.
-- **Gestión de Stock:** Control detallado de existencias y especificaciones técnicas (JSON).
+## ✨ Características Destacadas
 
-## 📦 Instalación y Configuración
+### 🔐 Seguridad y Autenticación
+* **Flujo Completo de Auth:** Registro, Login y Logout con manejo de sesiones seguras.
+* **Recuperación de Contraseña:** Sistema de restablecimiento mediante tokens de un solo uso y envío de correos con **Nodemailer**.
+* **Middleware de Autorización:** Protección de rutas críticas según el rol del usuario (`client` / `admin`).
 
-Sigue estos pasos para ejecutar el proyecto en tu entorno local (Linux Mint/Ubuntu):
+### 📦 Gestión de Productos y Pedidos
+* **Catálogo Dinámico:** Filtrado eficiente de productos interactuando directamente con la base de datos.
+* **Persistencia de Carrito:** Sincronización inteligente entre el estado local y la base de datos al iniciar sesión.
+* **Arquitectura Híbrida:** El backend detecta el origen de la petición (Formulario HTML o JSON) para responder de forma óptima (Redirect o API Response).
 
-1. **Clonar el repositorio:**
+### 🛠️ Panel Administrativo
+* **CRUD Avanzado:** Gestión total de inventario, incluyendo especificaciones técnicas en formato JSON.
+* **Carga de Imágenes:** Implementación de **Multer** para el manejo de archivos en el servidor.
+* **Estado de Stock:** Validación en tiempo real para evitar inconsistencias en las órdenes de compra.
 
+---
+
+## 📦 Instalación y Configuración (Entorno Local)
+
+Para ejecutar QuickTech en tu entorno (probado en **Linux Mint/Ubuntu**):
+
+1. **Clonar y acceder:**
+   ```bash
    git clone <tu-url-de-github>
    cd quicktech
 
@@ -37,13 +48,35 @@ Sigue estos pasos para ejecutar el proyecto en tu entorno local (Linux Mint/Ubun
    npm install
 3. **Configurar variables de entorno:**
 
-   DATABASE_URL="postgresql://usuario:password@localhost:5432/quicktech_db"
+   DATABASE_URL="mysql://usuario:password@host:4000/test?sslaccept=strict"
    JWT_SECRET="tu_secreto_super_seguro"
    PORT=3000
+   NODE_ENV="development"
 4. **Preparar la Base de Datos:**
+   # Genera el cliente de Prisma basado en el schema
+   npx prisma generate
 
-   npx prisma migrate dev --name init
+   # Sincroniza el modelo con la base de datos en TiDB
+   npx prisma db push
+
 5. **Iniciar el servidor:**
 
    npm run dev
 
+## 📸 Vista Previa de la Plataforma
+
+### 💻 Experiencia del Cliente
+<p align="center">
+  <img src="./screenshots/home.png" width="850" title="Catálogo QuickTech">
+</p>
+
+| Detalle Técnico del Producto | Carrito de Compras Dinámico |
+| :---: | :---: |
+| ![Detalle](./screenshots/product_detail.png) | ![Carrito](./screenshots/carrito.png) |
+| *Visualización de specs técnicos desde DB* | *Gestión de cantidades y persistencia* |
+
+### 🛠️ Proceso de Compra y Gestión
+| Resumen y Checkout | Panel de Administración (CRUD) |
+| :---: | :---: |
+| ![Checkout](./screenshots/checkout.png) | ![Admin](./screenshots/admin_crud_products.png) |
+| *Validación de stock e integridad de orden* | *Interfaz de gestión de inventario para admins* |
