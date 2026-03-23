@@ -39,7 +39,6 @@ QuickTech es una plataforma de comercio electrónico integral desarrollada con u
 Para ejecutar QuickTech en tu entorno (probado en **Linux Mint/Ubuntu**):
 
 1. **Clonar y acceder:**
-   ```bash
    git clone <tu-url-de-github>
    cd quicktech
 
@@ -72,7 +71,7 @@ Para ejecutar QuickTech en tu entorno (probado en **Linux Mint/Ubuntu**):
 
 | Detalle Técnico del Producto | Carrito de Compras Dinámico |
 | :---: | :---: |
-| ![Detalle](screenshots/product_detail.png) | ![Carrito](creenshots/carrito.png) |
+| ![Detalle](screenshots/product_detail.png) | ![Carrito](screenshots/carrito.png) |
 | *Visualización de specs técnicos desde DB* | *Gestión de cantidades y persistencia* |
 
 ### 🛠️ Proceso de Compra y Gestión
