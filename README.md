@@ -54,6 +54,7 @@ DATABASE_URL="mysql://usuario:password@host:4000/test?sslaccept=strict"
 JWT_SECRET="tu_secreto_super_seguro"
 PORT=3000
 NODE_ENV="development"
+APP_URL=http://localhost:3000
 ```
 
 4. **Preparar la Base de Datos:**
