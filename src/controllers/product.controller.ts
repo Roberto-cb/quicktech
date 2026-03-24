@@ -3,11 +3,7 @@ import product from "../models/product";
 import { Prisma } from "@prisma/client";
 import XLSX from "xlsx";
 
-/**
- * DB: Product.dimensions es String (LongText)
- * Front: manda dimensions como objeto (o string JSON)
- * -> Guardamos SIEMPRE como string JSON
- */
+
 const toDimensionsString = (input: any): string | null => {
   let d = input;
 
@@ -55,7 +51,7 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
     stock,
   } = req.body;
 
-  // ✅ Guardar dimensions como string JSON
+  //  Guardar dimensions como string JSON
   const dimsStr = toDimensionsString(dimensions);
   if (!dimsStr) {
     res.status(400).json({ error: "Dimensiones debe ser un objeto JSON válido" });
@@ -124,7 +120,7 @@ export const getAllProducts = async (req: Request, res: Response): Promise<void>
       product.count({ where }),
     ]);
 
-    // ✅ devolver price como number y dimensions como objeto
+    // devolver price como number y dimensions como objeto
     const safe = items.map((p: any) => ({
       ...p,
       price: decToNumber(p.price),

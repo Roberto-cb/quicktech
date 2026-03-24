@@ -10,7 +10,7 @@ router.post('/items',verifyToken,upsertCartItem);
 router.post('/merge', verifyToken,mergeCart);
 router.delete('/items/:productId',verifyToken,removeCartItem);
 router.delete('/',verifyToken,clearCart);
-//router.post('/checkout',verifyToken,checkoutCart);
+
 
 
 export default router;

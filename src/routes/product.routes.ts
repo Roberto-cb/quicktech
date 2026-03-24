@@ -15,9 +15,6 @@ import { uploadExcel } from "../middlewares/uploadExcel.middleware";
 
 const router = express.Router();
 
-/* =========================
-   ADMIN (rutas específicas primero)
-   ========================= */
 
 // Excel import (admin)
 router.post(

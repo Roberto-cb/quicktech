@@ -7,7 +7,7 @@ import {
   checkoutFromCart
 } from "../services/order.service";
 
-// controllers/order.controller.ts
+
 
 
 export const postOrder = async (req: Request, res: Response): Promise<void> => {
@@ -75,7 +75,7 @@ export const getOrder = async (req: Request, res: Response): Promise<void> => {
   res.json(order);
 };
 
-// OJO: si querés exponer este endpoint, agregá la ruta con checkRole('admin') en order.routes.ts
+
 export const getOrdersAll = async (req: Request, res: Response): Promise<void> => {
   const page = Number(req.query.page ?? 1);
   const pageSize = Number(req.query.pageSize ?? 20);
@@ -91,7 +91,7 @@ export const postCheckout = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    // ✅ Requerir método de pago (demo: viene del LocalStorage)
+    // Requerir método de pago (demo: viene del LocalStorage)
     const { cardId } = (req.body ?? {}) as { cardId?: string };
 
     if (typeof cardId !== "string" || !cardId.trim()) {

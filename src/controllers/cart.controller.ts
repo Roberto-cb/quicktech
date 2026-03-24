@@ -56,7 +56,7 @@ export const getCart = async (req: Request, res: Response): Promise<void> => {
     image_url: it.product.image_url,
     price,
     quantity: it.quantity,
-    lineTotal: price * it.quantity, // ✅ acá la corrección
+    lineTotal: price * it.quantity, 
   };
 });
 
@@ -99,7 +99,7 @@ export const upsertCartItem = async (req: Request, res: Response): Promise<void>
     // si quantity = 0 -> eliminar ítem
     if (quantity === 0) {
       await cartItemModel.deleteMany({ where: { cart_id: cart.id, product_id: productId } });
-      res.status(200).json({ removed: true }); // <-- corregido
+      res.status(200).json({ removed: true }); 
       return;
     }
     
@@ -171,7 +171,7 @@ export const clearCart = async (req: Request, res: Response): Promise<void> => {
       return;
     }
     await cartItemModel.deleteMany({ where: { cart_id: cart.id } });
-    res.status(200).json({ cleared: true }); // <-- corregido
+    res.status(200).json({ cleared: true }); 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "No se pudo vaciar el carrito" });

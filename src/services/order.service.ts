@@ -146,18 +146,7 @@ export const checkoutFromCart = async (userId: number): Promise<CreateOrderResul
     const cartItems = cart?.items ?? [];
     if (!cartItems.length) throw new Error("EMPTY_CART");
     
-    /*
-    // 1) limpiar items inválidos (producto inexistente o inactivo)
-    const invalidIds = cartItems
-      .filter((it) => !it.product || !it.product.isActive)
-      .map((it) => it.product_id);
-
-    if (invalidIds.length > 0) {
-      await tx.cartItem.deleteMany({
-        where: { cart_id: cart!.id, product_id: { in: invalidIds } },
-      });
-    }
-    */
+ 
     const itemsInactivos = cartItems.filter((it)=> !it.product || !it.product.isActive);
 
     if(itemsInactivos.length > 0){
@@ -172,14 +161,7 @@ export const checkoutFromCart = async (userId: number): Promise<CreateOrderResul
       quantity: it.quantity,
     }));
     
-    /*
-    // 2) quedarnos solo con items válidos
-    const validItems: OrderItem[] = cartItems
-      .filter((it) => it.product && it.product.isActive)
-      .map((it) => ({ productId: it.product_id, quantity: it.quantity }));
-
-    if (!validItems.length) throw new Error("EMPTY_CART");
-    */
+   
     // 3) crear venta
     const sale = await createOrderWithTx(tx, userId, validItems);
 

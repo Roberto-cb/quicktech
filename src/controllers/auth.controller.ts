@@ -99,11 +99,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const token = generateToken({
       id: created.id,
       email: created.email,
-      role: created.role, // ya es 'client' | 'admin' gracias al type guard
+      role: created.role, 
     });
     res.cookie('token', token, cookieOpts)
 
-    //res.status(201).json({ token, user: created });
+
     isForm(req)? res.redirect('/'): res.status(201).json({ok:true, user: created});;
   } catch (error: any) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
@@ -144,11 +144,11 @@ export const login = async(req:Request, res: Response): Promise<void> =>{
      const token = generateToken({
       id:    user.id,
       email: user.email,
-      role:  user.role, // ya es 'client' | 'admin' gracias al type guard
+      role:  user.role,
     });
     res.cookie('token', token, cookieOpts);
      isForm(req) ? res.redirect('/') : res.status(200).json({ ok: true, user: { id: user.id, email: user.email, role: user.role } });
-    //res.status(200).json({ token, user: { id: user.id, email: user.email, role: user.role } });
+    
   }catch(error){
     console.error(error);
     isForm(req) ? res.redirect('/auth/login?error=server') : res.status(500).json({ error: 'Hubo un error en el sistema.' });
